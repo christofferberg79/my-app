@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("jvm") version "1.3.11"
     application
+    id("com.github.johnrengelman.shadow") version "4.0.3"
 }
 
 group = "cberg"
@@ -34,4 +36,13 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Wrapper> {
     gradleVersion = "5.0"
+}
+
+tasks.create("stage") {
+    dependsOn("build")
+}
+
+tasks.withType<ShadowJar> {
+    classifier = ""
+    version = ""
 }
