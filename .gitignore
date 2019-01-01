@@ -1,4 +1,8 @@
-/build/
-/.gradle/
-/.idea/
-/.env
+build
+out
+.gradle
+.idea
+*.iml
+*.ipr
+*.iws
+.env
