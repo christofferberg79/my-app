@@ -27,7 +27,7 @@ dependencies {
 }
 
 application {
-    mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+    mainClassName = "io.ktor.server.netty.EngineMain"
 }
 
 tasks.withType<KotlinCompile> {
