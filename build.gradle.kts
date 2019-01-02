@@ -89,3 +89,7 @@ liquibase {
         }
     }
 }
+
+tasks.register("mytask") {
+    println(">>> jdbcDatabaseUrl: $jdbcDatabaseUrl")
+}
