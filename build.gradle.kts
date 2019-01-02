@@ -54,7 +54,12 @@ tasks.withType<Wrapper> {
 }
 
 tasks.register("stage") {
-    dependsOn("build")
+    dependsOn("build", "copyLiquibaseToLib")
+}
+
+tasks.register<Copy>("copyLiquibaseToLib") {
+    into("$buildDir/libs/liquibase")
+    from(configurations.liquibaseRuntime)
 }
 
 tasks.withType<ShadowJar> {
