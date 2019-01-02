@@ -91,5 +91,7 @@ liquibase {
 }
 
 tasks.register("mytask") {
-    println(">>> jdbcDatabaseUrl: $jdbcDatabaseUrl")
+    doLast {
+        println(">>> jdbcDatabaseUrl: $jdbcDatabaseUrl")
+    }
 }
