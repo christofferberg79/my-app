@@ -11,5 +11,9 @@ fun Application.main() {
         get("/") {
             call.respondText("OK")
         }
+
+        get("/db") {
+            call.respondText(System.getenv("DATABASE_URL"))
+        }
     }
 }
