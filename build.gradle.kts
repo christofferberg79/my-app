@@ -7,6 +7,8 @@ plugins {
     application
     id("com.github.johnrengelman.shadow") version "4.0.3"
     id("com.github.ben-manes.versions") version "0.20.0"
+    id("org.liquibase.gradle") version "2.0.1"
+    id("net.saliman.properties") version "1.4.6"
 }
 
 group = "cberg"
@@ -20,13 +22,20 @@ repositories {
 val ktorVersion = "1.1.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.11.2"
+val postgresqlDriverVersion = "42.2.5"
+val liquibaseVersion = "3.6.2"
+val liquibaseGroovyDslVersion = "2.0.2"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.jetbrains.exposed:exposed:$exposedVersion")
-    implementation("org.postgresql:postgresql:42.2.5")
+    implementation("org.postgresql:postgresql:$postgresqlDriverVersion")
+
+    liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
+    liquibaseRuntime("org.postgresql:postgresql:$postgresqlDriverVersion")
+    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
@@ -44,7 +53,7 @@ tasks.withType<Wrapper> {
     gradleVersion = "5.0"
 }
 
-tasks.create("stage") {
+tasks.register("stage") {
     dependsOn("build")
 }
 
@@ -64,6 +73,19 @@ tasks.withType<DependencyUpdatesTask> {
                     reject("Release candidate")
                 }
             }
+        }
+    }
+}
+
+val jdbcDatabaseUrl: String by project
+
+liquibase {
+    activities {
+        register("main") {
+            arguments = mapOf(
+                "url" to jdbcDatabaseUrl,
+                "changeLogFile" to "src/main/resources/db/changelog.groovy"
+            )
         }
     }
 }

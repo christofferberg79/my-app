@@ -2,8 +2,6 @@ package cberg.myapp
 
 import io.ktor.application.Application
 import io.ktor.application.call
-import io.ktor.http.HttpStatusCode
-import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.routing
@@ -15,7 +13,7 @@ object Visits : Table("visit") {
     val visitedAt = datetime("visited_at")
 }
 
-data class Visit(val visitedAt: DateTime)
+//data class Visit(val visitedAt: DateTime)
 
 fun Application.main() {
     Database.connect(System.getenv("JDBC_DATABASE_URL"), driver = "org.postgresql.Driver")
@@ -40,7 +38,6 @@ fun Application.main() {
             }
             check(res != null)
             call.respondText("Number of visits: ${res.first}\nLast visit: ${res.second}")
-//            call.respondText(System.getenv("DATABASE_URL"))
         }
     }
 }
