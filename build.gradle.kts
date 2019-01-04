@@ -1,6 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
     kotlin("jvm") version "1.3.11"
@@ -47,25 +45,30 @@ tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-tasks.withType<Wrapper> {
+tasks.wrapper {
     gradleVersion = "5.0"
 }
 
 tasks.register("stage") {
-    dependsOn("build", "copyLiquibase")
+    dependsOn("clean", "build", "copyLiquibase")
+}
+
+tasks.named("build") {
+    mustRunAfter("clean")
 }
 
 tasks.register<Copy>("copyLiquibase") {
     from(configurations.liquibaseRuntime)
     into("$buildDir/libs")
+    rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
 }
 
-tasks.withType<ShadowJar> {
+tasks.shadowJar {
     classifier = ""
     version = ""
 }
 
-tasks.withType<DependencyUpdatesTask> {
+tasks.dependencyUpdates {
     resolutionStrategy {
         componentSelection {
             all {

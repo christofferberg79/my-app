@@ -9,11 +9,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AppTest {
-    @Test
-    fun testApp() = withTestApplication(Application::main) {
-        with(handleRequest(Get, "/")) {
-            assertEquals(OK, response.status())
-            assertEquals("OK", response.content)
-        }
-    }
+//    @Test
+//    fun testApp() = withTestApplication(Application::main) {
+//        with(handleRequest(Get, "/")) {
+//            assertEquals(OK, response.status())
+//            assertEquals("OK", response.content)
+//        }
+//    }
 }
