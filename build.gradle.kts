@@ -41,6 +41,7 @@ dependencies {
     testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
     testImplementation("com.h2database:h2:$h2Version")
     testImplementation("org.liquibase:liquibase-core:$liquibaseVersion")
+    testImplementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
     testImplementation("org.hamcrest:hamcrest-library:2.1")
 }
 
