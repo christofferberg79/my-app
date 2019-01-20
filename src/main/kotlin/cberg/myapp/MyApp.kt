@@ -13,8 +13,6 @@ object Visits : Table("visit") {
     val visitedAt = datetime("visited_at")
 }
 
-//data class Visit(val visitedAt: DateTime)
-
 fun Application.main() {
     val dbUrl = System.getenv("JDBC_DATABASE_URL")
     val dbDriver = System.getenv("JDBC_DATABASE_DRIVER") ?: "org.postgresql.Driver"

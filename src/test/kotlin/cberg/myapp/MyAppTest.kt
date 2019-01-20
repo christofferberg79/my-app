@@ -22,17 +22,18 @@ import kotlin.test.assertEquals
 
 class AppTest {
     companion object {
-        @ClassRule @JvmField
+        @ClassRule
+        @JvmField
         val envVars = EnvironmentVariables()
 
-        @BeforeClass @JvmStatic
+        @BeforeClass
+        @JvmStatic
         fun setupDatabase() {
             val dbUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
             val dbDriver = "org.h2.Driver"
             envVars.set("JDBC_DATABASE_URL", dbUrl)
             envVars.set("JDBC_DATABASE_DRIVER", dbDriver)
 
-            Class.forName(dbDriver)
             val connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))
             val liquibase = Liquibase("db/changelog.xml", ClassLoaderResourceAccessor(), database)
