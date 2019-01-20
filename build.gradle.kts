@@ -22,7 +22,7 @@ val logbackVersion = "1.2.3"
 val exposedVersion = "0.12.1"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.2"
-//val liquibaseGroovyDslVersion = "2.0.2"
+val liquibaseGroovyDslVersion = "2.0.2"
 val h2Version = "1.4.197"
 
 dependencies {
@@ -33,7 +33,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlDriverVersion")
 
     liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
-//    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
+    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
     liquibaseRuntime("org.postgresql:postgresql:$postgresqlDriverVersion")
 
     testImplementation(kotlin("test"))
@@ -97,7 +97,7 @@ liquibase {
         register("main") {
             arguments = mapOf(
                 "url" to jdbcDatabaseUrl,
-                "changeLogFile" to "src/main/resources/db/changelog.xml"
+                "changeLogFile" to "src/main/resources/db/changelog.groovy"
             )
         }
     }
