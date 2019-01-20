@@ -16,7 +16,9 @@ object Visits : Table("visit") {
 //data class Visit(val visitedAt: DateTime)
 
 fun Application.main() {
-    Database.connect(System.getenv("JDBC_DATABASE_URL"), driver = "org.postgresql.Driver")
+    val dbUrl = System.getenv("JDBC_DATABASE_URL")
+    val dbDriver = System.getenv("JDBC_DATABASE_DRIVER") ?: "org.postgresql.Driver"
+    Database.connect(dbUrl, dbDriver)
 
     routing {
         get("/") {

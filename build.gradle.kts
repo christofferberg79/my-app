@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.3.11"
     application
-    id("com.github.johnrengelman.shadow") version "4.0.3"
+    id("com.github.johnrengelman.shadow") version "4.0.4"
     id("com.github.ben-manes.versions") version "0.20.0"
     id("org.liquibase.gradle") version "2.0.1"
     id("net.saliman.properties") version "1.4.6"
@@ -19,9 +19,10 @@ repositories {
 
 val ktorVersion = "1.1.1"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.11.2"
+val exposedVersion = "0.12.1"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.5.5"
+val h2Version = "1.4.197"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -35,6 +36,10 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
+    testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
+    testImplementation("com.h2database:h2:$h2Version")
+    testImplementation("org.liquibase:liquibase-core:$liquibaseVersion")
+    testImplementation("org.hamcrest:hamcrest-library:1.3")
 }
 
 application {
