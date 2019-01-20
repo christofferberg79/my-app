@@ -41,7 +41,15 @@ class AppTest {
     }
 
     @Test
-    fun testApp() = withTestApplication(Application::main) {
+    fun testRoot() = withTestApplication(Application::main) {
+        with(handleRequest(Get, "/")) {
+            assertEquals(OK, response.status())
+            assertEquals("OK", response.content)
+        }
+    }
+
+    @Test
+    fun testDb() = withTestApplication(Application::main) {
         with(handleRequest(Get, "/db")) {
             assertEquals(OK, response.status())
             assertThat(response.content, startsWith("Number of visits: "))
