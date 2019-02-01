@@ -72,8 +72,8 @@ tasks.register<Copy>("copyLiquibase") {
 }
 
 tasks.shadowJar {
-    classifier = ""
-    version = ""
+    archiveClassifier.set("")
+    archiveVersion.set("")
 }
 
 tasks.dependencyUpdates {
