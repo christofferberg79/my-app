@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.11"
+    kotlin("jvm") version "1.3.20"
     application
     id("com.github.johnrengelman.shadow") version "4.0.4"
     id("com.github.ben-manes.versions") version "0.20.0"
@@ -17,11 +17,11 @@ repositories {
     maven("https://dl.bintray.com/kotlin/ktor")
 }
 
-val ktorVersion = "1.1.1"
+val ktorVersion = "1.1.2"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.12.1"
 val postgresqlDriverVersion = "42.2.5"
-val liquibaseVersion = "3.6.2"
+val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.2"
 val h2Version = "1.4.197"
 
@@ -54,7 +54,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.0"
+    gradleVersion = "5.1.1"
 }
 
 tasks.register("stage") {
