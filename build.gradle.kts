@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.20"
+    kotlin("jvm") version "1.3.21"
     application
     id("com.github.johnrengelman.shadow") version "4.0.4"
     id("com.github.ben-manes.versions") version "0.20.0"
@@ -54,10 +54,11 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.1.1"
+    gradleVersion = "5.2.1"
 }
 
 tasks.register("stage") {
+    group = "build"
     dependsOn("clean", "build", "copyLiquibase")
 }
 
