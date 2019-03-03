@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.3.21"
     application
-    id("com.github.johnrengelman.shadow") version "4.0.4"
-    id("com.github.ben-manes.versions") version "0.20.0"
+    id("com.github.johnrengelman.shadow") version "5.0.0"
+    id("com.github.ben-manes.versions") version "0.21.0"
     id("org.liquibase.gradle") version "2.0.1"
     id("net.saliman.properties") version "1.4.6"
 }
@@ -17,13 +17,13 @@ repositories {
     maven("https://dl.bintray.com/kotlin/ktor")
 }
 
-val ktorVersion = "1.1.2"
+val ktorVersion = "1.1.3"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.12.1"
+val exposedVersion = "0.12.2"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
-val liquibaseGroovyDslVersion = "2.0.2"
-val h2Version = "1.4.197"
+val liquibaseGroovyDslVersion = "2.0.3"
+val h2Version = "1.4.198"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
