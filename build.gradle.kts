@@ -19,11 +19,10 @@ repositories {
 
 val ktorVersion = "1.1.3"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.12.2"
+val exposedVersion = "0.13.5"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
-val h2Version = "1.4.198"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -39,7 +38,6 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
-    testImplementation("com.h2database:h2:$h2Version")
     testImplementation("org.liquibase:liquibase-core:$liquibaseVersion")
     testImplementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
     testImplementation("org.hamcrest:hamcrest-library:2.1")
@@ -54,7 +52,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.2.1"
+    gradleVersion = "5.3.1"
 }
 
 tasks.register("stage") {
