@@ -27,6 +27,7 @@ val liquibaseGroovyDslVersion = "2.0.3"
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-jackson:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.jetbrains.exposed:exposed:$exposedVersion")
     implementation("org.postgresql:postgresql:$postgresqlDriverVersion")

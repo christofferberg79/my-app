@@ -10,11 +10,12 @@ import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
 import liquibase.resource.ClassLoaderResourceAccessor
-import org.hamcrest.Matchers.startsWith
+import org.hamcrest.Matchers.*
 import org.junit.Assert.assertThat
 import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.contrib.java.lang.system.EnvironmentVariables
+import java.sql.Connection
 import java.sql.DriverManager
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,15 +27,15 @@ class AppTest {
         @JvmField
         val envVars = EnvironmentVariables()
 
+        lateinit var connection: Connection
+
         @BeforeClass
         @JvmStatic
         fun setupDatabase() {
             val dbUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-            val dbDriver = "org.h2.Driver"
             envVars.set("JDBC_DATABASE_URL", dbUrl)
-            envVars.set("JDBC_DATABASE_DRIVER", dbDriver)
 
-            val connection = DriverManager.getConnection(dbUrl)
+            connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))
             val liquibase = Liquibase("db/changelog.groovy", ClassLoaderResourceAccessor(), database)
             liquibase.update(Contexts())
@@ -54,6 +55,32 @@ class AppTest {
         with(handleRequest(Get, "/db")) {
             assertEquals(OK, response.status())
             assertThat(response.content, startsWith("Number of visits: "))
+        }
+    }
+
+    @Test
+    fun testEmptyTodos() = withTestApplication(Application::main) {
+        connection.run {
+            createStatement().executeUpdate("DELETE FROM todo")
+            commit()
+        }
+        with(handleRequest(Get, "/todos")) {
+            assertEquals(OK, response.status())
+            assertThat(response.content, matchesPattern("\\[\\s*\\]"))
+        }
+    }
+
+    @Test
+    fun testSingletonTodos() = withTestApplication(Application::main) {
+        connection.run {
+            createStatement().executeUpdate("DELETE FROM todo")
+            createStatement().executeUpdate("INSERT INTO todo VALUES('123', 'test')")
+            commit()
+        }
+        with(handleRequest(Get, "/todos")) {
+            assertEquals(OK, response.status())
+            assertThat(response.content, containsString("123"))
+            assertThat(response.content, containsString("test"))
         }
     }
 
