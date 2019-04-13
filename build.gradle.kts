@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.3.21"
+    kotlin("jvm") version "1.3.30"
     application
     id("com.github.johnrengelman.shadow") version "5.0.0"
     id("com.github.ben-manes.versions") version "0.21.0"
@@ -19,7 +19,7 @@ repositories {
 
 val ktorVersion = "1.1.3"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.13.5"
+val exposedVersion = "0.13.6"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
