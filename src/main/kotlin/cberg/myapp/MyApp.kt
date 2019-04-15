@@ -5,15 +5,15 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpHeaders.Location
+import io.ktor.http.HttpStatusCode.Companion.Created
+import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
+import io.ktor.request.uri
 import io.ktor.response.header
 import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.post
-import io.ktor.routing.routing
+import io.ktor.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
@@ -40,38 +40,50 @@ fun Application.main() {
     })
 
     routing {
-        get("/todos") {
-            val todos = transaction {
-                Todos
-                    .selectAll()
-                    .map { Todo(it[Todos.id], it[Todos.description]) }
+        route("todos") {
+            get {
+                val todos = transaction {
+                    Todos.selectAll()
+                        .map { Todo(it[Todos.id], it[Todos.description]) }
+                }
+
+                call.respond(todos)
             }
 
-            call.respond(todos)
-        }
+            post {
+                val todoDraft = call.receive<TodoDraft>()
+                val todo = Todo(UUID.randomUUID(), todoDraft.description)
+                transaction {
+                    Todos.insert {
+                        it[id] = todo.id
+                        it[description] = todo.description
+                    }
+                }
+                call.response.status(Created)
+                call.response.header(Location, "${call.request.uri}/${todo.id}")
+            }
 
-        post("/todos") {
-            val todoDraft = call.receive<TodoDraft>()
-            val todo = Todo(UUID.randomUUID(), todoDraft.description)
-            transaction {
-                Todos.insert {
-                    it[id] = todo.id
-                    it[description] = todo.description
+            route("{id}") {
+                get {
+                    val id = call.parameters["id"]?.let { UUID.fromString(it) }
+                    check(id != null)
+                    val todo = transaction {
+                        Todos.select { Todos.id eq id }
+                            .map { Todo(it[Todos.id], it[Todos.description]) }
+                            .single()
+                    }
+                    call.respond(todo)
+                }
+
+                delete {
+                    val id = call.parameters["id"]?.let { UUID.fromString(it) }
+                    check(id != null)
+                    transaction {
+                        Todos.deleteWhere { Todos.id eq id }
+                    }
+                    call.response.status(NoContent)
                 }
             }
-            call.response.status(HttpStatusCode.Created)
-            call.response.header(HttpHeaders.Location, "/todos/${todo.id}")
-        }
-
-        get("/todos/{id}") {
-            val id = call.parameters["id"]?.let { UUID.fromString(it) }
-            check(id != null)
-            val todo = transaction {
-                Todos.select { Todos.id eq id }
-                    .map { Todo(it[Todos.id], it[Todos.description]) }
-                    .single()
-            }
-            call.respond(todo)
         }
     }
 }
