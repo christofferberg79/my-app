@@ -5,20 +5,19 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.request.receive
+import io.ktor.response.header
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.get
+import io.ktor.routing.post
 import io.ktor.routing.routing
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import java.sql.DriverManager
 import java.util.*
-
-object Visits : Table("visit") {
-    val visitedAt = datetime("visited_at")
-}
 
 object Todos : Table("todo") {
     val id = uuid("id")
@@ -26,48 +25,53 @@ object Todos : Table("todo") {
 }
 
 data class Todo(val id: UUID, val description: String)
+data class TodoDraft(val description: String)
 
 fun Application.main() {
-    Database.connect(getNewConnection = {
-        val url = System.getenv("JDBC_DATABASE_URL")
-        DriverManager.getConnection(url)
-    })
-
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
 
+    Database.connect(getNewConnection = {
+        val url = System.getenv("JDBC_DATABASE_URL")
+        DriverManager.getConnection(url)
+    })
+
     routing {
-        get("/") {
-            call.respondText("OK")
-        }
-
-        get("/db") {
-            transaction {
-                Visits.insert { stmt ->
-                    stmt[visitedAt] = DateTime.now()
-                }
-            }
-            val res = transaction {
-                val num = Visits.visitedAt.count().alias("as num")
-                val last = Visits.visitedAt.max().alias("as last")
-                Visits.slice(num, last)
-                    .selectAll()
-                    .map { rs -> rs[num] to rs[last] }.singleOrNull()
-            }
-            check(res != null)
-            call.respondText("Number of visits: ${res.first}\nLast visit: ${res.second}")
-        }
-
         get("/todos") {
-            transaction {
+            val todos = transaction {
                 Todos
                     .selectAll()
                     .map { Todo(it[Todos.id], it[Todos.description]) }
             }
-                .let { call.respond(it) }
+
+            call.respond(todos)
+        }
+
+        post("/todos") {
+            val todoDraft = call.receive<TodoDraft>()
+            val todo = Todo(UUID.randomUUID(), todoDraft.description)
+            transaction {
+                Todos.insert {
+                    it[id] = todo.id
+                    it[description] = todo.description
+                }
+            }
+            call.response.status(HttpStatusCode.Created)
+            call.response.header(HttpHeaders.Location, "/todos/${todo.id}")
+        }
+
+        get("/todos/{id}") {
+            val id = call.parameters["id"]?.let { UUID.fromString(it) }
+            check(id != null)
+            val todo = transaction {
+                Todos.select { Todos.id eq id }
+                    .map { Todo(it[Todos.id], it[Todos.description]) }
+                    .single()
+            }
+            call.respond(todo)
         }
     }
 }
