@@ -6,8 +6,10 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpHeaders.Location
+import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
+import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.request.uri
@@ -51,7 +53,12 @@ fun Application.main() {
             }
 
             post {
-                val todoDraft = call.receive<TodoDraft>()
+                val todoDraft = try {
+                    call.receive<TodoDraft>()
+                } catch (e: Exception) {
+                    call.response.status(BadRequest)
+                    return@post
+                }
                 val todo = Todo(UUID.randomUUID(), todoDraft.description)
                 transaction {
                     Todos.insert {
@@ -65,23 +72,73 @@ fun Application.main() {
 
             route("{id}") {
                 get {
-                    val id = call.parameters["id"]?.let { UUID.fromString(it) }
+                    val id = call.parameters["id"]?.let {
+                        try {
+                            UUID.fromString(it)
+                        } catch (e: IllegalArgumentException) {
+                            call.response.status(NotFound)
+                            return@get
+                        }
+                    }
                     check(id != null)
                     val todo = transaction {
                         Todos.select { Todos.id eq id }
                             .map { Todo(it[Todos.id], it[Todos.description]) }
-                            .single()
+                            .singleOrNull()
                     }
-                    call.respond(todo)
+                    if (todo == null) {
+                        call.response.status(NotFound)
+                    } else {
+                        call.respond(todo)
+                    }
+                }
+
+                put {
+                    val id = call.parameters["id"]?.let {
+                        try {
+                            UUID.fromString(it)
+                        } catch (e: IllegalArgumentException) {
+                            call.response.status(NotFound)
+                            return@put
+                        }
+                    }
+                    check(id != null)
+                    val todoDraft = try {
+                        call.receive<TodoDraft>()
+                    } catch (e: Exception) {
+                        call.response.status(BadRequest)
+                        return@put
+                    }
+                    val count = transaction {
+                        Todos.update({ Todos.id eq id }) {
+                            it[description] = todoDraft.description
+                        }
+                    }
+                    if (count == 0) {
+                        call.response.status(NotFound)
+                    } else {
+                        call.response.status(NoContent)
+                    }
                 }
 
                 delete {
-                    val id = call.parameters["id"]?.let { UUID.fromString(it) }
+                    val id = call.parameters["id"]?.let {
+                        try {
+                            UUID.fromString(it)
+                        } catch (e: IllegalArgumentException) {
+                            call.response.status(NotFound)
+                            return@delete
+                        }
+                    }
                     check(id != null)
-                    transaction {
+                    val count = transaction {
                         Todos.deleteWhere { Todos.id eq id }
                     }
-                    call.response.status(NoContent)
+                    if (count == 0) {
+                        call.response.status(NotFound)
+                    } else {
+                        call.response.status(NoContent)
+                    }
                 }
             }
         }

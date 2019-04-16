@@ -8,8 +8,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod.Companion.Delete
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpMethod.Companion.Post
+import io.ktor.http.HttpMethod.Companion.Put
+import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
+import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
@@ -46,6 +49,7 @@ class AppTest {
 
         const val TODOS_PATH = "/todos"
         const val ID_PATTERN = "\\p{Graph}+"
+        const val MALFORMED_ID = "invalid UUID"
 
         @BeforeClass
         @JvmStatic
@@ -70,7 +74,7 @@ class AppTest {
     }
 
     @Test
-    fun getAllTodosWithEmptyDatabase() = withTestApplication(Application::main) {
+    fun getTodosWithEmptyDatabase() = withTestApplication(Application::main) {
         // Get all Todos
         val call = handleRequest(Get, TODOS_PATH)
 
@@ -81,7 +85,7 @@ class AppTest {
     }
 
     @Test
-    fun getAllTodosWithSingleEntry() = withTestApplication(Application::main) {
+    fun getTodos() = withTestApplication(Application::main) {
         // Prepare data in database
         val todo = Todo(UUID.randomUUID(), "test")
         transaction {
@@ -126,7 +130,16 @@ class AppTest {
     }
 
     @Test
-    fun getSingleTodo() = withTestApplication(Application::main) {
+    fun postTodoWithoutBody() = withTestApplication(Application::main) {
+        val call = handleRequest(Post, TODOS_PATH) {
+            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+
+        assertEquals(BadRequest, call.response.status())
+    }
+
+    @Test
+    fun getTodo() = withTestApplication(Application::main) {
         // Prepare data in database
         val todo = Todo(UUID.randomUUID(), "test")
         transaction {
@@ -143,6 +156,18 @@ class AppTest {
         assertEquals(OK, call.response.status())
         val receivedTodo = call.response.content?.let { jacksonObjectMapper().readValue<Todo>(it) }
         assertEquals(todo, receivedTodo)
+    }
+
+    @Test
+    fun getTodoNotFound() = withTestApplication(Application::main) {
+        val call = handleRequest(Get, "$TODOS_PATH/${UUID.randomUUID()}")
+        assertEquals(NotFound, call.response.status())
+    }
+
+    @Test
+    fun getTodoMalformedId() = withTestApplication(Application::main) {
+        val call = handleRequest(Get, "$TODOS_PATH/$MALFORMED_ID")
+        assertEquals(NotFound, call.response.status())
     }
 
     @Test
@@ -167,6 +192,88 @@ class AppTest {
             Todos.select { Todos.id eq todo.id }.empty()
         }
         assertTrue(deleted)
+    }
+
+    @Test
+    fun deleteTodoNotFound() = withTestApplication(Application::main) {
+        val call = handleRequest(Delete, "$TODOS_PATH/${UUID.randomUUID()}")
+        assertEquals(NotFound, call.response.status())
+    }
+
+    @Test
+    fun deleteTodoMalformedId() = withTestApplication(Application::main) {
+        val call = handleRequest(Delete, "$TODOS_PATH/$MALFORMED_ID")
+        assertEquals(NotFound, call.response.status())
+    }
+
+    @Test
+    fun putTodo() = withTestApplication(Application::main) {
+        // Prepare data in database
+        val todo = Todo(UUID.randomUUID(), "test")
+        transaction {
+            Todos.insert {
+                it[id] = todo.id
+                it[description] = todo.description
+            }
+        }
+
+        // Put a Todo update
+        val todoDraft = TodoDraft("test2")
+        val call = handleRequest(Put, "$TODOS_PATH/${todo.id}") {
+            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+        }
+
+        // Check response
+        assertEquals(NoContent, call.response.status())
+
+        // Check data in database
+        val todo2 = transaction {
+            Todos.select { Todos.id eq todo.id }
+                .map { Todo(it[Todos.id], it[Todos.description]) }
+                .single()
+        }
+        assertEquals(todoDraft.description, todo2.description)
+    }
+
+    @Test
+    fun putTodoWithoutBody() = withTestApplication(Application::main) {
+        // Prepare data in database
+        val todo = Todo(UUID.randomUUID(), "test")
+        transaction {
+            Todos.insert {
+                it[id] = todo.id
+                it[description] = todo.description
+            }
+        }
+
+        // Put a Todo update
+        val call = handleRequest(Put, "$TODOS_PATH/${todo.id}") {
+            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+        }
+
+        // Check response
+        assertEquals(BadRequest, call.response.status())
+    }
+
+    @Test
+    fun putTodoNotFound() = withTestApplication(Application::main) {
+        val todoDraft = TodoDraft("test2")
+        val call = handleRequest(Put, "$TODOS_PATH/${UUID.randomUUID()}") {
+            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+        }
+        assertEquals(NotFound, call.response.status())
+    }
+
+    @Test
+    fun putTodoMalformedId() = withTestApplication(Application::main) {
+        val todoDraft = TodoDraft("test2")
+        val call = handleRequest(Put, "$TODOS_PATH/$MALFORMED_ID") {
+            addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+        }
+        assertEquals(NotFound, call.response.status())
     }
 
 }
