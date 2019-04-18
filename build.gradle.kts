@@ -17,7 +17,7 @@ repositories {
     maven("https://dl.bintray.com/kotlin/ktor")
 }
 
-val ktorVersion = "1.1.3"
+val ktorVersion = "1.1.4"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.13.6"
 val postgresqlDriverVersion = "42.2.5"
@@ -53,7 +53,7 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.wrapper {
-    gradleVersion = "5.3.1"
+    gradleVersion = "5.4"
 }
 
 tasks.register("stage") {
@@ -80,7 +80,7 @@ tasks.dependencyUpdates {
     resolutionStrategy {
         componentSelection {
             all {
-                val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview")
+                val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "eap")
                     .map { Regex(".*[.-]$it[.\\d-]*", RegexOption.IGNORE_CASE) }
                     .any { candidate.version.matches(it) }
                 if (rejected) {
