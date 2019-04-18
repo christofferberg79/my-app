@@ -29,6 +29,8 @@ object Todos : Table("todo") {
 data class Todo(val id: UUID, val description: String)
 data class TodoDraft(val description: String)
 
+private fun Todo(it: ResultRow) = Todo(it[Todos.id], it[Todos.description])
+
 fun Application.main() {
     install(ContentNegotiation) {
         jackson {
@@ -45,10 +47,8 @@ fun Application.main() {
         route("todos") {
             get {
                 val todos = transaction {
-                    Todos.selectAll()
-                        .map { Todo(it[Todos.id], it[Todos.description]) }
+                    Todos.selectAll().map { Todo(it) }
                 }
-
                 call.respond(todos)
             }
 
@@ -72,19 +72,14 @@ fun Application.main() {
 
             route("{id}") {
                 get {
-                    val id = call.parameters["id"]?.let {
-                        try {
-                            UUID.fromString(it)
-                        } catch (e: IllegalArgumentException) {
-                            call.response.status(NotFound)
-                            return@get
-                        }
+                    val id = try {
+                        UUID.fromString(call.parameters["id"])
+                    } catch (e: IllegalArgumentException) {
+                        call.response.status(NotFound)
+                        return@get
                     }
-                    check(id != null)
                     val todo = transaction {
-                        Todos.select { Todos.id eq id }
-                            .map { Todo(it[Todos.id], it[Todos.description]) }
-                            .singleOrNull()
+                        Todos.select { Todos.id eq id }.singleOrNull()?.let { Todo(it) }
                     }
                     if (todo == null) {
                         call.response.status(NotFound)
@@ -94,15 +89,12 @@ fun Application.main() {
                 }
 
                 put {
-                    val id = call.parameters["id"]?.let {
-                        try {
-                            UUID.fromString(it)
-                        } catch (e: IllegalArgumentException) {
-                            call.response.status(NotFound)
-                            return@put
-                        }
+                    val id = try {
+                        UUID.fromString(call.parameters["id"])
+                    } catch (e: IllegalArgumentException) {
+                        call.response.status(NotFound)
+                        return@put
                     }
-                    check(id != null)
                     val todoDraft = try {
                         call.receive<TodoDraft>()
                     } catch (e: Exception) {
@@ -122,15 +114,12 @@ fun Application.main() {
                 }
 
                 delete {
-                    val id = call.parameters["id"]?.let {
-                        try {
-                            UUID.fromString(it)
-                        } catch (e: IllegalArgumentException) {
-                            call.response.status(NotFound)
-                            return@delete
-                        }
+                    val id = try {
+                        UUID.fromString(call.parameters["id"])
+                    } catch (e: IllegalArgumentException) {
+                        call.response.status(NotFound)
+                        return@delete
                     }
-                    check(id != null)
                     val count = transaction {
                         Todos.deleteWhere { Todos.id eq id }
                     }
