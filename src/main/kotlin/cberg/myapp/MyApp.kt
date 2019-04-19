@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.BadRequestException
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.NotFoundException
 import io.ktor.http.HttpHeaders.Location
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.jackson.jackson
@@ -58,8 +58,7 @@ fun Application.main() {
                 val todoDraft = try {
                     call.receive<TodoDraft>()
                 } catch (e: Exception) {
-                    call.response.status(BadRequest)
-                    return@post
+                    throw BadRequestException("Error when reading TodoDraft from body", e)
                 }
                 val todo = Todo(UUID.randomUUID(), todoDraft.description)
                 transaction {
@@ -97,8 +96,7 @@ fun Application.main() {
                     val todoDraft = try {
                         call.receive<TodoDraft>()
                     } catch (e: Exception) {
-                        call.response.status(BadRequest)
-                        return@put
+                        throw BadRequestException("Error when reading TodoDraft from body", e)
                     }
                     val count = transaction {
                         Todos.update({ Todos.id eq id }) {
