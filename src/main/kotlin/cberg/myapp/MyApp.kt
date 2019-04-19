@@ -5,17 +5,18 @@ import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.NotFoundException
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
-import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.request.uri
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.util.KtorExperimentalAPI
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
@@ -31,6 +32,7 @@ data class TodoDraft(val description: String)
 
 private fun Todo(it: ResultRow) = Todo(it[Todos.id], it[Todos.description])
 
+@KtorExperimentalAPI
 fun Application.main() {
     install(ContentNegotiation) {
         jackson {
@@ -75,25 +77,22 @@ fun Application.main() {
                     val id = try {
                         UUID.fromString(call.parameters["id"])
                     } catch (e: IllegalArgumentException) {
-                        call.response.status(NotFound)
-                        return@get
+                        throw NotFoundException()
                     }
                     val todo = transaction {
-                        Todos.select { Todos.id eq id }.singleOrNull()?.let { Todo(it) }
+                        Todos.select { Todos.id eq id }
+                            .singleOrNull()
+                            ?.let { Todo(it) }
+                            ?: throw NotFoundException()
                     }
-                    if (todo == null) {
-                        call.response.status(NotFound)
-                    } else {
-                        call.respond(todo)
-                    }
+                    call.respond(todo)
                 }
 
                 put {
                     val id = try {
                         UUID.fromString(call.parameters["id"])
                     } catch (e: IllegalArgumentException) {
-                        call.response.status(NotFound)
-                        return@put
+                        throw NotFoundException()
                     }
                     val todoDraft = try {
                         call.receive<TodoDraft>()
@@ -107,27 +106,24 @@ fun Application.main() {
                         }
                     }
                     if (count == 0) {
-                        call.response.status(NotFound)
-                    } else {
-                        call.response.status(NoContent)
+                        throw NotFoundException()
                     }
+                    call.response.status(NoContent)
                 }
 
                 delete {
                     val id = try {
                         UUID.fromString(call.parameters["id"])
                     } catch (e: IllegalArgumentException) {
-                        call.response.status(NotFound)
-                        return@delete
+                        throw NotFoundException()
                     }
                     val count = transaction {
                         Todos.deleteWhere { Todos.id eq id }
                     }
                     if (count == 0) {
-                        call.response.status(NotFound)
-                    } else {
-                        call.response.status(NoContent)
+                        throw NotFoundException()
                     }
+                    call.response.status(NoContent)
                 }
             }
         }
