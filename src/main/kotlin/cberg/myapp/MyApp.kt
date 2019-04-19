@@ -79,8 +79,7 @@ fun Application.main() {
                         throw NotFoundException()
                     }
                     val todo = transaction {
-                        Todos.select { Todos.id eq id }
-                            .singleOrNull()
+                        Todos.select { Todos.id eq id }.singleOrNull()
                             ?.let { Todo(it) }
                             ?: throw NotFoundException()
                     }
