@@ -2,9 +2,11 @@ package cberg.myapp
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.BadRequestException
+import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.NotFoundException
 import io.ktor.http.HttpHeaders.Location
@@ -40,6 +42,10 @@ fun Application.main() {
         }
     }
 
+    install(CORS) {
+        anyHost()
+    }
+
     Database.connect(getNewConnection = {
         val url = System.getenv("JDBC_DATABASE_URL")
         DriverManager.getConnection(url)
@@ -55,11 +61,7 @@ fun Application.main() {
             }
 
             post {
-                val todoDraft = try {
-                    call.receive<TodoDraft>()
-                } catch (e: Exception) {
-                    throw BadRequestException("Error when reading TodoDraft from body", e)
-                }
+                val todoDraft = call.receiveOrBadRequestException<TodoDraft>()
                 val todo = Todo(UUID.randomUUID(), todoDraft.description)
                 transaction {
                     Todos.insert {
@@ -73,11 +75,7 @@ fun Application.main() {
 
             route("{id}") {
                 get {
-                    val id = try {
-                        UUID.fromString(call.parameters["id"])
-                    } catch (e: IllegalArgumentException) {
-                        throw NotFoundException()
-                    }
+                    val id = uuidOrNotFoundException(call.parameters["id"])
                     val todo = transaction {
                         Todos.select { Todos.id eq id }.singleOrNull()
                             ?.let { Todo(it) }
@@ -87,42 +85,51 @@ fun Application.main() {
                 }
 
                 put {
-                    val id = try {
-                        UUID.fromString(call.parameters["id"])
-                    } catch (e: IllegalArgumentException) {
-                        throw NotFoundException()
-                    }
-                    val todoDraft = try {
-                        call.receive<TodoDraft>()
-                    } catch (e: Exception) {
-                        throw BadRequestException("Error when reading TodoDraft from body", e)
-                    }
-                    val count = transaction {
-                        Todos.update({ Todos.id eq id }) {
+                    val id = uuidOrNotFoundException(call.parameters["id"])
+                    val todoDraft = call.receiveOrBadRequestException<TodoDraft>()
+                    val found = transaction {
+                        val count = Todos.update({ Todos.id eq id }) {
                             it[description] = todoDraft.description
                         }
+                        count > 0
                     }
-                    if (count == 0) {
-                        throw NotFoundException()
-                    }
+                    found.orNotFoundException()
                     call.response.status(NoContent)
                 }
 
                 delete {
-                    val id = try {
-                        UUID.fromString(call.parameters["id"])
-                    } catch (e: IllegalArgumentException) {
-                        throw NotFoundException()
+                    val id = uuidOrNotFoundException(call.parameters["id"])
+                    val found = transaction {
+                        val count = Todos.deleteWhere { Todos.id eq id }
+                        count > 0
                     }
-                    val count = transaction {
-                        Todos.deleteWhere { Todos.id eq id }
-                    }
-                    if (count == 0) {
-                        throw NotFoundException()
-                    }
+                    found.orNotFoundException()
                     call.response.status(NoContent)
                 }
             }
         }
     }
 }
+
+@KtorExperimentalAPI
+private fun Boolean.orNotFoundException() {
+    if (!this) {
+        throw NotFoundException()
+    }
+}
+
+@KtorExperimentalAPI
+private fun uuidOrNotFoundException(s: String?) =
+    try {
+        UUID.fromString(s)
+    } catch (e: IllegalArgumentException) {
+        throw NotFoundException()
+    }
+
+@KtorExperimentalAPI
+suspend inline fun <reified T : Any> ApplicationCall.receiveOrBadRequestException() =
+    try {
+        receive(T::class)
+    } catch (e: Exception) {
+        throw BadRequestException("Error when receiving data from call", e)
+    }
