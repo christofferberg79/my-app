@@ -24,6 +24,8 @@ val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
 
+val jdbcDatabaseUrl: String by project
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -61,8 +63,12 @@ tasks.register("stage") {
     dependsOn("clean", "build", "copyLiquibase")
 }
 
-tasks.named("build") {
+tasks.build {
     mustRunAfter("clean")
+}
+
+tasks.named<JavaExec>("run") {
+    environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
 }
 
 tasks.register<Copy>("copyLiquibase") {
@@ -90,8 +96,6 @@ tasks.dependencyUpdates {
         }
     }
 }
-
-val jdbcDatabaseUrl: String by project
 
 liquibase {
     activities {
