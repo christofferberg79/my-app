@@ -68,7 +68,9 @@ tasks.build {
 }
 
 tasks.named<JavaExec>("run") {
-    environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
+    doFirst {
+        environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
+    }
 }
 
 tasks.register<Copy>("copyLiquibase") {
