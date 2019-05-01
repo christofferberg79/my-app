@@ -57,25 +57,22 @@ tasks.wrapper {
     gradleVersion = "5.4.1"
 }
 
-tasks.register("stage") {
-    group = "build"
-    dependsOn("clean", "build", "copyLiquibase")
-}
-
-tasks.build {
-    mustRunAfter("clean")
-}
-
-tasks.named<JavaExec>("run") {
-    doFirst {
-        environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
-    }
-}
-
 tasks.register<Copy>("copyLiquibase") {
+    group = "heroku setup"
     from(configurations.liquibaseRuntime)
     into("$buildDir/libs/liquibase")
     rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
+}
+
+tasks.register("stage") {
+    group = "heroku setup"
+    dependsOn("build", "copyLiquibase")
+}
+
+tasks.withType<JavaExec> {
+    doFirst {
+        environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
+    }
 }
 
 tasks.shadowJar {
