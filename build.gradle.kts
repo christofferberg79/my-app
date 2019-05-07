@@ -6,7 +6,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.0.0"
     id("com.github.ben-manes.versions") version "0.21.0"
     id("org.liquibase.gradle") version "2.0.1"
-    id("net.saliman.properties") version "1.4.6"
+    id("net.saliman.properties") version "1.5.1"
 }
 
 group = "cberg"
@@ -14,9 +14,10 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     jcenter()
+    maven("http://kotlin.bintray.com/ktor")
 }
 
-val ktorVersion = "1.1.4"
+val ktorVersion = "1.1.5"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.13.6"
 val postgresqlDriverVersion = "42.2.5"
