@@ -23,7 +23,7 @@ val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
 
-val jdbcDatabaseUrl: String by project
+val jdbcDatabaseUrl: String? by project
 
 dependencies {
     liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
@@ -37,7 +37,7 @@ kotlin {
             tasks.register<JavaExec>("run") {
                 group = "run"
                 dependsOn("jvmMainClasses")
-                environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
+                environment("JDBC_DATABASE_URL", jdbcDatabaseUrl ?: "")
                 classpath(
                     output.allOutputs.files,
                     runtimeDependencyFiles
