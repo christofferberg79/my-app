@@ -1,6 +1,4 @@
-package db
-
-databaseChangeLog {
+databaseChangeLog(logicalFilePath: "src/main/resources/db/changelog.groovy") {
     changeSet(id: "1", author: "cberg") {
         createTable(tableName: "todo") {
             column(name: "id", type: "uuid") {

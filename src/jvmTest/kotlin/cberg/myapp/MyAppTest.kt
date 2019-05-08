@@ -61,7 +61,7 @@ class AppTest {
 
             val connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))
-            val liquibase = Liquibase("src/main/resources/db/changelog.groovy", FileSystemResourceAccessor(), database)
+            val liquibase = Liquibase("db/changelog.groovy", FileSystemResourceAccessor(), database)
             liquibase.update(Contexts())
 
             Database.connect(getNewConnection = { connection })

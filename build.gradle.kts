@@ -121,7 +121,7 @@ liquibase {
         register("main") {
             arguments = mapOf(
                 "url" to jdbcDatabaseUrl,
-                "changeLogFile" to "src/main/resources/db/changelog.groovy"
+                "changeLogFile" to "db/changelog.groovy"
             )
         }
     }
