@@ -1,8 +1,7 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("jvm") version "1.3.31"
-    application
+    id("kotlin-multiplatform") version "1.3.31"
     id("com.github.johnrengelman.shadow") version "5.0.0"
     id("com.github.ben-manes.versions") version "0.21.0"
     id("org.liquibase.gradle") version "2.0.1"
@@ -27,31 +26,63 @@ val liquibaseGroovyDslVersion = "2.0.3"
 val jdbcDatabaseUrl: String by project
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-jackson:$ktorVersion")
-    implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("org.jetbrains.exposed:exposed:$exposedVersion")
-    implementation("org.postgresql:postgresql:$postgresqlDriverVersion")
-
     liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
     liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
     liquibaseRuntime("org.postgresql:postgresql:$postgresqlDriverVersion")
-
-    testImplementation(kotlin("test"))
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("com.github.stefanbirkner:system-rules:1.19.0")
-    testImplementation("org.liquibase:liquibase-core:$liquibaseVersion")
-    testImplementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
-    testImplementation("org.hamcrest:hamcrest-library:2.1")
 }
 
-application {
-    mainClassName = "io.ktor.server.netty.EngineMain"
-}
+kotlin {
+    jvm {
+        compilations.getByName("main") {
+            tasks.register<JavaExec>("run") {
+                group = "run"
+                dependsOn("jvmMainClasses")
+                environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
+                classpath(
+                    output.allOutputs.files,
+                    runtimeDependencyFiles
+                )
+                main = "io.ktor.server.netty.EngineMain"
+            }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+            tasks.register<ShadowJar>("shadowJar") {
+                group = "build"
+
+                from(output)
+                configurations = listOf(project.configurations["jvmRuntimeClasspath"])
+
+                archiveClassifier.set("")
+                archiveVersion.set("")
+
+                manifest {
+                    attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
+                }
+            }
+        }
+    }
+
+    sourceSets {
+        getByName("jvmMain") {
+            dependencies {
+                implementation(kotlin("stdlib-jdk8"))
+                implementation("io.ktor:ktor-server-netty:$ktorVersion")
+                implementation("io.ktor:ktor-jackson:$ktorVersion")
+                implementation("ch.qos.logback:logback-classic:$logbackVersion")
+                implementation("org.jetbrains.exposed:exposed:$exposedVersion")
+                implementation("org.postgresql:postgresql:$postgresqlDriverVersion")
+            }
+        }
+        getByName("jvmTest") {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("io.ktor:ktor-server-test-host:$ktorVersion")
+                implementation("com.github.stefanbirkner:system-rules:1.19.0")
+                implementation("org.liquibase:liquibase-core:$liquibaseVersion")
+                implementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
+                implementation("org.hamcrest:hamcrest-library:2.1")
+            }
+        }
+    }
 }
 
 tasks.wrapper {
@@ -67,18 +98,7 @@ tasks.register<Copy>("copyLiquibase") {
 
 tasks.register("stage") {
     group = "heroku setup"
-    dependsOn("build", "copyLiquibase")
-}
-
-tasks.withType<JavaExec> {
-    doFirst {
-        environment("JDBC_DATABASE_URL", jdbcDatabaseUrl)
-    }
-}
-
-tasks.shadowJar {
-    archiveClassifier.set("")
-    archiveVersion.set("")
+    dependsOn("shadowJar", "copyLiquibase")
 }
 
 tasks.dependencyUpdates {

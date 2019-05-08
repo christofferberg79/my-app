@@ -22,7 +22,7 @@ import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
 import liquibase.database.jvm.JdbcConnection
-import liquibase.resource.ClassLoaderResourceAccessor
+import liquibase.resource.FileSystemResourceAccessor
 import org.hamcrest.Matchers.matchesPattern
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteAll
@@ -61,7 +61,7 @@ class AppTest {
 
             val connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))
-            val liquibase = Liquibase("db/changelog.groovy", ClassLoaderResourceAccessor(), database)
+            val liquibase = Liquibase("src/main/resources/db/changelog.groovy", FileSystemResourceAccessor(), database)
             liquibase.update(Contexts())
 
             Database.connect(getNewConnection = { connection })
