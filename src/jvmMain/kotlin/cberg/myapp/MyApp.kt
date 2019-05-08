@@ -17,6 +17,7 @@ import io.ktor.request.receive
 import io.ktor.request.uri
 import io.ktor.response.header
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.util.KtorExperimentalAPI
 import org.jetbrains.exposed.sql.*
@@ -52,6 +53,10 @@ fun Application.main() {
     })
 
     routing {
+        get("info") {
+            call.respondText("New MPP")
+        }
+
         route("todos") {
             get {
                 val todos = transaction {
