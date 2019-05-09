@@ -25,37 +25,33 @@ val liquibaseGroovyDslVersion = "2.0.3"
 
 val jdbcDatabaseUrl: String? by project
 
-dependencies {
-    liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
-    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
-    liquibaseRuntime("org.postgresql:postgresql:$postgresqlDriverVersion")
-}
-
 kotlin {
     jvm {
         compilations.getByName("main") {
-            tasks.register<JavaExec>("run") {
-                group = "run"
-                dependsOn("jvmMainClasses")
-                environment("JDBC_DATABASE_URL", jdbcDatabaseUrl ?: "")
-                classpath(
-                    output.allOutputs.files,
-                    runtimeDependencyFiles
-                )
-                main = "io.ktor.server.netty.EngineMain"
-            }
+            tasks {
+                register<JavaExec>("run") {
+                    group = "run"
+                    dependsOn("jvmMainClasses")
+                    environment("JDBC_DATABASE_URL", jdbcDatabaseUrl ?: "")
+                    classpath(
+                        output.allOutputs.files,
+                        runtimeDependencyFiles
+                    )
+                    main = "io.ktor.server.netty.EngineMain"
+                }
 
-            tasks.register<ShadowJar>("shadowJar") {
-                group = "build"
+                register<ShadowJar>("shadowJar") {
+                    group = "build"
 
-                from(output)
-                configurations = listOf(project.configurations["jvmRuntimeClasspath"])
+                    from(output)
+                    configurations = listOf(project.configurations["jvmRuntimeClasspath"])
 
-                archiveClassifier.set("")
-                archiveVersion.set("")
+                    archiveClassifier.set("")
+                    archiveVersion.set("")
 
-                manifest {
-                    attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
+                    manifest {
+                        attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
+                    }
                 }
             }
         }
@@ -85,26 +81,41 @@ kotlin {
     }
 }
 
-tasks.wrapper {
-    gradleVersion = "5.4.1"
+dependencies {
+    liquibaseRuntime("org.liquibase:liquibase-core:$liquibaseVersion")
+    liquibaseRuntime("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
+    liquibaseRuntime("org.postgresql:postgresql:$postgresqlDriverVersion")
 }
 
-tasks.register<Copy>("copyLiquibase") {
-    group = "heroku setup"
-    from(configurations.liquibaseRuntime)
-    into("$buildDir/libs/liquibase")
-    rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
+liquibase {
+    activities.register("main") {
+        arguments = mapOf(
+            "url" to jdbcDatabaseUrl,
+            "changeLogFile" to "db/changelog.groovy"
+        )
+    }
 }
 
-tasks.register("stage") {
-    group = "heroku setup"
-    dependsOn("shadowJar", "copyLiquibase")
-}
+tasks {
+    wrapper {
+        gradleVersion = "5.4.1"
+    }
 
-tasks.dependencyUpdates {
-    resolutionStrategy {
-        componentSelection {
-            all {
+    register<Copy>("copyLiquibase") {
+        group = "heroku setup"
+        from(configurations.liquibaseRuntime)
+        into("$buildDir/libs/liquibase")
+        rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
+    }
+
+    register("stage") {
+        group = "heroku setup"
+        dependsOn("shadowJar", "copyLiquibase")
+    }
+
+    dependencyUpdates {
+        resolutionStrategy {
+            componentSelection.all {
                 val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "eap")
                     .map { Regex(".*[.-]$it[.\\d-]*", RegexOption.IGNORE_CASE) }
                     .any { candidate.version.matches(it) }
@@ -114,15 +125,5 @@ tasks.dependencyUpdates {
             }
         }
     }
-}
 
-liquibase {
-    activities {
-        register("main") {
-            arguments = mapOf(
-                "url" to jdbcDatabaseUrl,
-                "changeLogFile" to "db/changelog.groovy"
-            )
-        }
-    }
 }
