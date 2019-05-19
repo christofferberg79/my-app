@@ -9,6 +9,7 @@ import io.ktor.features.BadRequestException
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.NotFoundException
+import io.ktor.html.respondHtml
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
@@ -17,9 +18,11 @@ import io.ktor.request.receive
 import io.ktor.request.uri
 import io.ktor.response.header
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.html.body
+import kotlinx.html.div
+import kotlinx.html.id
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
@@ -53,8 +56,15 @@ fun Application.main() {
     })
 
     routing {
-        get("info") {
-            call.respondText("New MPP")
+        get("/") {
+            call.respondHtml {
+                body {
+                    div {
+                        id = "root"
+                        +"root"
+                    }
+                }
+            }
         }
 
         route("todos") {
