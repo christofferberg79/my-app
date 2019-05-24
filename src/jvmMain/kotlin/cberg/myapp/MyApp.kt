@@ -6,7 +6,6 @@ import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.BadRequestException
-import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.NotFoundException
 import io.ktor.html.respondHtml
@@ -20,9 +19,7 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.html.body
-import kotlinx.html.div
-import kotlinx.html.id
+import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
@@ -46,25 +43,16 @@ fun Application.main() {
         }
     }
 
-    install(CORS) {
-        anyHost()
-    }
+    println("jdbcDatabaseUrl: ${System.getProperty("jdbcDatabaseUrl")}")
 
     Database.connect(getNewConnection = {
-        val url = System.getenv("JDBC_DATABASE_URL")
+        val url = System.getProperty("jdbcDatabaseUrl")
         DriverManager.getConnection(url)
     })
 
     routing {
         get("/") {
-            call.respondHtml {
-                body {
-                    div {
-                        id = "root"
-                        +"root"
-                    }
-                }
-            }
+            call.respondHtml { indexHtml() }
         }
 
         route("todos") {
@@ -123,6 +111,18 @@ fun Application.main() {
                 }
             }
         }
+    }
+}
+
+private fun HTML.indexHtml() {
+    lang = "en"
+    head {
+        meta { charset = "utf-8" }
+        title("Hello Web!")
+    }
+    body {
+        div { id = "root" }
+        script(src = "/main.bundle.js") {}
     }
 }
 

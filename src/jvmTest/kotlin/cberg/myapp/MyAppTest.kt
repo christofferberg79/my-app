@@ -32,8 +32,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
-import org.junit.ClassRule
-import org.junit.contrib.java.lang.system.EnvironmentVariables
 import java.sql.DriverManager
 import java.util.*
 import kotlin.test.BeforeTest
@@ -45,10 +43,6 @@ import kotlin.test.assertNotNull
 @KtorExperimentalAPI
 class AppTest {
     companion object {
-        @ClassRule
-        @JvmField
-        val envVars = EnvironmentVariables()
-
         const val TODOS_PATH = "/todos"
         const val ID_PATTERN = "\\p{Graph}+"
         const val MALFORMED_ID = "invalid UUID"
@@ -57,7 +51,7 @@ class AppTest {
         @JvmStatic
         fun setupDatabase() {
             val dbUrl = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-            envVars.set("JDBC_DATABASE_URL", dbUrl)
+            System.setProperty("jdbcDatabaseUrl", dbUrl)
 
             val connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))

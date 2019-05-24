@@ -1,11 +1,14 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.frontend.webpack.WebPackExtension
 
 plugins {
     id("kotlin-multiplatform") version "1.3.31"
+    id("org.jetbrains.kotlin.frontend") version "0.0.45"
+    id("kotlinx-serialization") version "1.3.31"
     id("com.github.johnrengelman.shadow") version "5.0.0"
     id("com.github.ben-manes.versions") version "0.21.0"
     id("org.liquibase.gradle") version "2.0.1"
-//    id("net.saliman.properties") version "1.5.1"
+    id("net.saliman.properties") version "1.5.1"
 }
 
 group = "cberg"
@@ -22,6 +25,7 @@ val exposedVersion = "0.13.7"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
+val kotlinxHtmlJsVersion = "0.6.11"
 
 val jdbcDatabaseUrl: String? by project
 
@@ -30,20 +34,7 @@ kotlin {
         jvm {
             compilations.getByName("main") {
                 tasks {
-                    register<JavaExec>("run") {
-                        group = "run"
-                        dependsOn("jvmMainClasses")
-                        environment("JDBC_DATABASE_URL", jdbcDatabaseUrl ?: "")
-                        classpath(
-                            output.allOutputs.files,
-                            runtimeDependencyFiles
-                        )
-                        main = "io.ktor.server.netty.EngineMain"
-                    }
-
-                    register<ShadowJar>("shadowJar") {
-                        group = "build"
-
+                    named<ShadowJar>("shadowJar") {
                         from(output)
                         configurations = listOf(project.configurations["jvmRuntimeClasspath"])
 
@@ -60,18 +51,10 @@ kotlin {
 
         js {
             compilations.getByName("main") {
-                tasks {
-                    register<Copy>("poulateWebFolder") {
-                        dependsOn("jsMainClasses")
-                        from(output)
-                        compileDependencyFiles.forEach { file ->
-                            from(zipTree(file.absolutePath).matching { include("*.js") })
-                        }
-                        into(buildDir.resolve("web"))
-                    }
-
-                    named("jsJar") {
-                        dependsOn("poulateWebFolder")
+                compileKotlinTask.configure {
+                    kotlinOptions {
+                        sourceMap = true
+                        moduleKind = "commonjs"
                     }
                 }
             }
@@ -95,7 +78,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("io.ktor:ktor-server-test-host:$ktorVersion")
-                implementation("com.github.stefanbirkner:system-rules:1.19.0")
                 implementation("org.liquibase:liquibase-core:$liquibaseVersion")
                 implementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
                 implementation("org.hamcrest:hamcrest-library:2.1")
@@ -105,6 +87,10 @@ kotlin {
         getByName("jsMain") {
             dependencies {
                 implementation(kotlin("stdlib-js"))
+                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinxHtmlJsVersion")
+                implementation("io.ktor:ktor-client-js:$ktorVersion")
+                implementation("io.ktor:ktor-client-json-js:$ktorVersion")
+                implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
             }
         }
     }
@@ -154,5 +140,23 @@ tasks {
             }
         }
     }
+}
 
+kotlinFrontend {
+    sourceMaps = true
+
+    bundle("webpack", delegateClosureOf<WebPackExtension> {
+        bundleName = "main"
+        proxyUrl = "http://localhost:8080"
+    })
+
+    npm {
+        devDependency("text-encoding") // workaround for https://github.com/ktorio/ktor/issues/961
+    }
+}
+
+ktor {
+    port = 8080
+    mainClass = "io.ktor.server.netty.EngineMain"
+    jvmOptions = arrayOf("-DjdbcDatabaseUrl=$jdbcDatabaseUrl")
 }
