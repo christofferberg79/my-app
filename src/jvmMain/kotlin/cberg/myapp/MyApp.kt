@@ -12,6 +12,7 @@ import io.ktor.html.respondHtml
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
+import io.ktor.http.content.*
 import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.request.uri
@@ -43,8 +44,6 @@ fun Application.main() {
         }
     }
 
-    println("jdbcDatabaseUrl: ${System.getProperty("jdbcDatabaseUrl")}")
-
     Database.connect(getNewConnection = {
         val url = System.getProperty("jdbcDatabaseUrl")
         DriverManager.getConnection(url)
@@ -53,6 +52,10 @@ fun Application.main() {
     routing {
         get("/") {
             call.respondHtml { indexHtml() }
+        }
+
+        static("/") {
+            resources("web")
         }
 
         route("todos") {

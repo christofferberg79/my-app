@@ -123,9 +123,20 @@ tasks {
         rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
     }
 
+    register<Copy>("copyBundleToKtor") {
+        group = "heroku setup"
+        dependsOn("bundle")
+        from("$buildDir/bundle")
+        into("$buildDir/processedResources/jvm/main/web")
+    }
+
     register("stage") {
         group = "heroku setup"
-        dependsOn("shadowJar", "copyLiquibase")
+        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
+    }
+
+    named("shadowJar") {
+        mustRunAfter("copyBundleToKtor")
     }
 
     dependencyUpdates {
