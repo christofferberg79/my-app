@@ -25,7 +25,7 @@ val exposedVersion = "0.13.7"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
-val kotlinxHtmlJsVersion = "0.6.11"
+val kotlinxHtmlJsVersion = "0.6.12"
 
 val jdbcDatabaseUrl: String? by project
 
