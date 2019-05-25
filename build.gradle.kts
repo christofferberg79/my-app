@@ -154,6 +154,8 @@ tasks {
 }
 
 kotlinFrontend {
+    downloadNodeJsVersion = "10.15.0"
+
     sourceMaps = true
 
     bundle("webpack", delegateClosureOf<WebPackExtension> {
