@@ -17,6 +17,7 @@ version = "1.0-SNAPSHOT"
 repositories {
     jcenter()
     maven("http://kotlin.bintray.com/ktor")
+    maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
 val ktorVersion = "1.2.0"
@@ -25,7 +26,7 @@ val exposedVersion = "0.13.7"
 val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
-val kotlinxHtmlJsVersion = "0.6.12"
+val kotlinReactVersion = "16.6.0-pre.71-kotlin-1.3.31"
 
 val jdbcDatabaseUrl: String? by project
 
@@ -87,7 +88,8 @@ kotlin {
         getByName("jsMain") {
             dependencies {
                 implementation(kotlin("stdlib-js"))
-                implementation("org.jetbrains.kotlinx:kotlinx-html-js:$kotlinxHtmlJsVersion")
+                implementation("org.jetbrains:kotlin-react-dom:$kotlinReactVersion")
+                implementation("org.jetbrains:kotlin-react:$kotlinReactVersion")
                 implementation("io.ktor:ktor-client-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
@@ -165,6 +167,10 @@ kotlinFrontend {
 
     npm {
         devDependency("text-encoding") // workaround for https://github.com/ktorio/ktor/issues/961
+        devDependency("core-js")
+        dependency("react")
+        dependency("react-dom")
+
     }
 }
 

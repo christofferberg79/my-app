@@ -3,11 +3,10 @@ import io.ktor.client.engine.js.Js
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.html.*
-import kotlinx.html.dom.append
+import kotlinx.coroutines.*
 import kotlinx.serialization.*
+import react.*
+import react.dom.*
 import kotlin.browser.document
 import kotlin.browser.window
 
@@ -31,32 +30,60 @@ class TodoList(val items: List<Todo>) {
 fun main() {
     window.onload = {
         val root = document.getElementById("root") ?: throw IllegalStateException("No root element found")
-        root.append {
-            h1 { +"Things to do" }
-            table {
-                id = "todo-table"
-                tr {
-                    th { +"Description" }
-                }
-            }
+        render(root) {
+            app()
         }
-        GlobalScope.launch {
+    }
+}
+
+class App : RComponent<RProps, App.State>(), CoroutineScope by MainScope() {
+    init {
+        state.apply {
+            todos = emptyList()
+        }
+    }
+
+    override fun componentDidMount() {
+        launch {
             val client = HttpClient(Js) {
                 install(JsonFeature) {
                     serializer = KotlinxSerializer()
                 }
             }
+            val newTodos = client.get<TodoList>("${window.location}todos").items
+            client.close()
 
-            val todos = client.get<TodoList>("${window.location}todos").items
+            setState {
+                todos = newTodos
+            }
+        }
+    }
 
-            document.getElementById("todo-table")?.append {
-                todos.forEach {
+    override fun componentWillUnmount() {
+        cancel()
+    }
+
+    override fun RBuilder.render() {
+        h1 { +"Things to do" }
+        table {
+            thead {
+                tr {
+                    th { +"Description" }
+                }
+            }
+            tbody {
+                state.todos.forEach {
                     tr {
                         td { +it.description }
                     }
                 }
             }
-            client.close()
         }
     }
+
+    interface State : RState {
+        var todos: List<Todo>
+    }
 }
+
+private fun RBuilder.app() = child(App::class) {}
