@@ -1,9 +1,9 @@
-package cberg.myapp
+package cberg.myapp.model
 
 import kotlinx.serialization.*
 
 @Serializable
-data class Todo(val id: String, val description: String)
+data class Todo(val id: String, val description: String, val done: Boolean)
 
 @Serializable
 class TodoList(val items: List<Todo>) {
@@ -20,4 +20,4 @@ class TodoList(val items: List<Todo>) {
 }
 
 @Serializable
-data class TodoDraft(val description: String)
+data class TodoDraft(val description: String, val done: Boolean = false)

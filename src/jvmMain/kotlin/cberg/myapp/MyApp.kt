@@ -1,5 +1,6 @@
 package cberg.myapp
 
+import cberg.myapp.model.*
 import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
@@ -25,16 +26,6 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
 import java.util.*
-
-object Todos : Table("todo") {
-    val id = uuid("id")
-    val description = varchar("description", 255)
-}
-
-data class Todo(val id: UUID, val description: String)
-data class TodoDraft(val description: String)
-
-private fun Todo(it: ResultRow) = Todo(it[Todos.id], it[Todos.description])
 
 @KtorExperimentalAPI
 fun Application.main() {
@@ -64,12 +55,11 @@ fun Application.main() {
             }
 
             post {
-                val todoDraft = call.receiveOrBadRequestException<TodoDraft>()
-                val todo = Todo(UUID.randomUUID(), todoDraft.description)
+                val draft = call.receiveOrBadRequestException<TodoDraft>()
+                val todo = draft.withId()
                 transaction {
-                    Todos.insert {
-                        it[id] = todo.id
-                        it[description] = todo.description
+                    Todos.insert { statement ->
+                        set(statement, todo)
                     }
                 }
                 call.response.status(Created)
@@ -89,10 +79,10 @@ fun Application.main() {
 
                 put {
                     val id = uuidOrNotFoundException(call.parameters["id"])
-                    val todoDraft = call.receiveOrBadRequestException<TodoDraft>()
+                    val draft = call.receiveOrBadRequestException<TodoDraft>()
                     val found = transaction {
-                        val count = Todos.update({ Todos.id eq id }) {
-                            it[description] = todoDraft.description
+                        val count = Todos.update(where = { Todos.id eq id }) { statement ->
+                            set(statement, draft)
                         }
                         count > 0
                     }

@@ -1,5 +1,6 @@
 package cberg.myapp
 
+import cberg.myapp.model.Todo
 import kotlinx.html.js.onClickFunction
 import react.RBuilder
 import react.RComponent
@@ -13,12 +14,21 @@ class TodoTable : RComponent<TodoTable.Props, RState>() {
             thead {
                 tr {
                     th { +"Description" }
+                    th { +"Done" }
                 }
             }
             tbody {
                 props.todos.forEach { todo ->
                     tr {
-                        td { +todo.description }
+                        key = todo.id
+                        td {
+                            +todo.description
+                        }
+                        td {
+                            todoDone(todo.done) { done ->
+                                props.update(todo.copy(done = done))
+                            }
+                        }
                         td {
                             button {
                                 +"Delete"
@@ -34,10 +44,14 @@ class TodoTable : RComponent<TodoTable.Props, RState>() {
     interface Props : RProps {
         var todos: List<Todo>
         var delete: (String) -> Unit
+        var update: (Todo) -> Unit
     }
 }
 
-fun RBuilder.todoTable(todos: List<Todo>, delete: (String) -> Unit) = child(TodoTable::class) {
-    attrs.todos = todos
-    attrs.delete = delete
-}
+fun RBuilder.todoTable(todos: List<Todo>, delete: (String) -> Unit, update: (Todo) -> Unit) =
+    child(TodoTable::class) {
+        attrs.todos = todos
+        attrs.delete = delete
+        attrs.update = update
+    }
+

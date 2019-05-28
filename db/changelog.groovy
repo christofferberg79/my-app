@@ -12,4 +12,15 @@ databaseChangeLog {
             dropTable(tableName: "todo")
         }
     }
+
+    changeSet(id: "2", author: "cberg") {
+        addColumn(tableName: "todo") {
+            column(name: "done", type: "boolean", defaultValueBoolean: false) {
+                constraints(nullable: false)
+            }
+        }
+        rollback {
+            dropColumn(tableName: "todo", columnName: "done")
+        }
+    }
 }

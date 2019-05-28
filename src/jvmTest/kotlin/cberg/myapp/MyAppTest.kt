@@ -1,5 +1,6 @@
 package cberg.myapp
 
+import cberg.myapp.model.*
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.Application
@@ -38,7 +39,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-
 
 @KtorExperimentalAPI
 class AppTest {
@@ -83,7 +83,7 @@ class AppTest {
     @Test
     fun getTodos() = withTestApplication(Application::main) {
         // Prepare data in database
-        val todo = Todo(UUID.randomUUID(), "test")
+        val todo = testTodo()
         transaction {
             Todos.insert {
                 it[id] = todo.id
@@ -96,17 +96,17 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val todos = call.response.content?.let { jacksonObjectMapper().readValue<List<Todo>>(it) }
+        val todos = call.response.content?.let { jacksonObjectMapper().readValue<List<TodoWithId>>(it) }
         assertEquals(listOf(todo), todos)
     }
 
     @Test
     fun postTodo() = withTestApplication(Application::main) {
         // Post a Todo
-        val todoDraft = TodoDraft("test")
+        val draft = testDraft()
         val call = handleRequest(Post, TODOS_PATH) {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+            setBody(jacksonObjectMapper().writeValueAsString(draft))
         }
 
         // Check response
@@ -119,10 +119,10 @@ class AppTest {
         val id = UUID.fromString(location.substring("$TODOS_PATH/".length))
         val todo = transaction {
             Todos.select { Todos.id eq id }
-                .map { Todo(it[Todos.id], it[Todos.description]) }
+                .map { Todo(it) }
                 .single()
         }
-        assertEquals(todoDraft.description, todo.description)
+        assertEquals(draft.description, todo.description)
     }
 
     @Test
@@ -137,7 +137,7 @@ class AppTest {
     @Test
     fun getTodo() = withTestApplication(Application::main) {
         // Prepare data in database
-        val todo = Todo(UUID.randomUUID(), "test")
+        val todo = testTodo()
         transaction {
             Todos.insert {
                 it[id] = todo.id
@@ -150,7 +150,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val receivedTodo = call.response.content?.let { jacksonObjectMapper().readValue<Todo>(it) }
+        val receivedTodo = call.response.content?.let { jacksonObjectMapper().readValue<TodoWithId>(it) }
         assertEquals(todo, receivedTodo)
     }
 
@@ -169,7 +169,7 @@ class AppTest {
     @Test
     fun deleteTodo() = withTestApplication(Application::main) {
         // Prepare data in database
-        val todo = Todo(UUID.randomUUID(), "test")
+        val todo = testTodo()
         transaction {
             Todos.insert {
                 it[id] = todo.id
@@ -205,7 +205,7 @@ class AppTest {
     @Test
     fun putTodo() = withTestApplication(Application::main) {
         // Prepare data in database
-        val todo = Todo(UUID.randomUUID(), "test")
+        val todo = testTodo()
         transaction {
             Todos.insert {
                 it[id] = todo.id
@@ -214,10 +214,10 @@ class AppTest {
         }
 
         // Put a Todo update
-        val todoDraft = TodoDraft("test2")
+        val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${todo.id}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+            setBody(jacksonObjectMapper().writeValueAsString(draft))
         }
 
         // Check response
@@ -226,16 +226,16 @@ class AppTest {
         // Check data in database
         val todo2 = transaction {
             Todos.select { Todos.id eq todo.id }
-                .map { Todo(it[Todos.id], it[Todos.description]) }
+                .map { Todo(it) }
                 .single()
         }
-        assertEquals(todoDraft.description, todo2.description)
+        assertEquals(draft.description, todo2.description)
     }
 
     @Test
     fun putTodoWithoutBody() = withTestApplication(Application::main) {
         // Prepare data in database
-        val todo = Todo(UUID.randomUUID(), "test")
+        val todo = testTodo()
         transaction {
             Todos.insert {
                 it[id] = todo.id
@@ -254,22 +254,25 @@ class AppTest {
 
     @Test
     fun putTodoNotFound() = withTestApplication(Application::main) {
-        val todoDraft = TodoDraft("test2")
+        val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${UUID.randomUUID()}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+            setBody(jacksonObjectMapper().writeValueAsString(draft))
         }
         assertEquals(NotFound, call.response.status())
     }
 
     @Test
     fun putTodoMalformedId() = withTestApplication(Application::main) {
-        val todoDraft = TodoDraft("test2")
+        val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/$MALFORMED_ID") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(todoDraft))
+            setBody(jacksonObjectMapper().writeValueAsString(draft))
         }
         assertEquals(NotFound, call.response.status())
     }
+
+    private fun testTodo() = testDraft().withId()
+    private fun testDraft(description: String = "test") = TodoDraft(description, false)
 
 }
