@@ -13,9 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.button
 import react.dom.h1
 import kotlin.browser.window
 
@@ -75,10 +73,6 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
 
     override fun RBuilder.render() {
         h1 { +"Things to do" }
-        button {
-            +"Refresh"
-            attrs.onClickFunction = { launch { fetchTodos() } }
-        }
         todoAdder(::onAdd)
         todoTable(state.todos, ::onDelete)
     }
