@@ -20,7 +20,7 @@ repositories {
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
-val ktorVersion = "1.2.0"
+val ktorVersion = "1.2.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.13.7"
 val postgresqlDriverVersion = "42.2.5"
