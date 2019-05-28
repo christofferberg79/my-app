@@ -18,3 +18,6 @@ class TodoList(val items: List<Todo>) {
         }
     }
 }
+
+@Serializable
+data class TodoDraft(val description: String)

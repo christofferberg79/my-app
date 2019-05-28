@@ -6,6 +6,9 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -46,9 +49,23 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
         }
     }
 
+    private fun onAdd(description: String) {
+        launch {
+            createTodo(description)
+            fetchTodos()
+        }
+    }
+
     private suspend fun deleteTodo(id: String) {
         client.delete<Unit>("${window.location}todos/$id")
-//        window.alert("Delete $id")
+    }
+
+    private suspend fun createTodo(description: String) {
+        client.post<Unit>("${window.location}todos") {
+            contentType(ContentType.Application.Json)
+            body = TodoDraft(description)
+        }
+        println("after post")
     }
 
     override fun componentWillUnmount() {
@@ -62,6 +79,7 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
             +"Refresh"
             attrs.onClickFunction = { launch { fetchTodos() } }
         }
+        todoAdder(::onAdd)
         todoTable(state.todos, ::onDelete)
     }
 
