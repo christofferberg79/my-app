@@ -4,54 +4,65 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.js.Js
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.html.js.onClickFunction
-import kotlinx.io.core.use
 import react.*
 import react.dom.button
 import react.dom.h1
 import kotlin.browser.window
 
 class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope() {
+    lateinit var client: HttpClient
+
     init {
-        state.apply {
-            todos = emptyList()
-        }
+        state.todos = emptyList()
     }
 
     override fun componentDidMount() {
-        fetchTodos()
-    }
-
-    private fun CoroutineScope.fetchTodos() = launch {
-        val client = HttpClient(Js) {
+        client = HttpClient(Js) {
             install(JsonFeature) {
                 serializer = KotlinxSerializer()
             }
         }
-        client.use {
-            val newTodos = it.get<TodoList>("${window.location}todos").items
-            setState {
-                todos = newTodos
-            }
+        launch { fetchTodos() }
+    }
+
+    private suspend fun fetchTodos() {
+        val newTodos = client.get<TodoList>("${window.location}todos").items
+        setState {
+            todos = newTodos
         }
+    }
+
+    private fun onDelete(id: String) {
+        launch {
+            deleteTodo(id)
+            fetchTodos()
+        }
+    }
+
+    private suspend fun deleteTodo(id: String) {
+        client.delete<Unit>("${window.location}todos/$id")
+//        window.alert("Delete $id")
     }
 
     override fun componentWillUnmount() {
         cancel()
+        client.close()
     }
 
     override fun RBuilder.render() {
         h1 { +"Things to do" }
         button {
             +"Refresh"
-            attrs.onClickFunction = { fetchTodos() }
+            attrs.onClickFunction = { launch { fetchTodos() } }
         }
-        todoTable(state.todos)
+        todoTable(state.todos, ::onDelete)
     }
 
     interface State : RState {
