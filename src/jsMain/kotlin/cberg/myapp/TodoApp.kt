@@ -33,13 +33,6 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
         launch { fetchTodos() }
     }
 
-    private suspend fun fetchTodos() {
-        val newTodos = client.get<TodoList>("${window.location}todos").items
-        setState {
-            todos = newTodos
-        }
-    }
-
     private fun onDelete(id: String) {
         launch {
             deleteTodo(id)
@@ -54,12 +47,19 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
         }
     }
 
+    private suspend fun fetchTodos() {
+        val newTodos = client.get<TodoList>("${window.location.origin}/todos").items
+        setState {
+            todos = newTodos
+        }
+    }
+
     private suspend fun deleteTodo(id: String) {
-        client.delete<Unit>("${window.location}todos/$id")
+        client.delete<Unit>("${window.location.origin}/todos/$id")
     }
 
     private suspend fun createTodo(description: String) {
-        client.post<Unit>("${window.location}todos") {
+        client.post<Unit>("$${window.location.origin}/todos") {
             contentType(ContentType.Application.Json)
             body = TodoDraft(description)
         }
