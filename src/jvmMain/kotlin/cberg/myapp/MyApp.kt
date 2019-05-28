@@ -8,10 +8,10 @@ import io.ktor.application.install
 import io.ktor.features.BadRequestException
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.NotFoundException
-import io.ktor.html.respondHtml
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
+import io.ktor.http.content.defaultResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
 import io.ktor.jackson.jackson
@@ -21,7 +21,6 @@ import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
@@ -51,12 +50,9 @@ fun Application.main() {
     })
 
     routing {
-        get("/") {
-            call.respondHtml { indexHtml() }
-        }
-
         static("/") {
             resources("web")
+            defaultResource("web/index.html")
         }
 
         route("todos") {
@@ -115,18 +111,6 @@ fun Application.main() {
                 }
             }
         }
-    }
-}
-
-private fun HTML.indexHtml() {
-    lang = "en"
-    head {
-        meta { charset = "utf-8" }
-        title("Hello Web!")
-    }
-    body {
-        div { id = "root" }
-        script(src = "/main.bundle.js") {}
     }
 }
 

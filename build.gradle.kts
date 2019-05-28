@@ -129,6 +129,7 @@ tasks {
         group = "heroku setup"
         dependsOn("bundle")
         from("$buildDir/bundle")
+        from("src/jsMain/web")
         into("$buildDir/processedResources/jvm/main/web")
     }
 
@@ -163,6 +164,7 @@ kotlinFrontend {
     bundle("webpack", delegateClosureOf<WebPackExtension> {
         bundleName = "main"
         proxyUrl = "http://localhost:8080"
+        contentPath = file("src/jsMain/web")
     })
 
     npm {
@@ -170,7 +172,6 @@ kotlinFrontend {
         devDependency("core-js")
         dependency("react")
         dependency("react-dom")
-
     }
 }
 
