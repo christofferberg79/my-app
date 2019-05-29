@@ -27,6 +27,8 @@ val postgresqlDriverVersion = "42.2.5"
 val liquibaseVersion = "3.6.3"
 val liquibaseGroovyDslVersion = "2.0.3"
 val kotlinReactVersion = "16.6.0-pre.71-kotlin-1.3.31"
+val kotlinStyledVersion = "1.0.0-pre.71-kotlin-1.3.31"
+val hamcrestLibraryVersion = "2.1"
 
 val jdbcDatabaseUrl: String? by project
 
@@ -81,15 +83,16 @@ kotlin {
                 implementation("io.ktor:ktor-server-test-host:$ktorVersion")
                 implementation("org.liquibase:liquibase-core:$liquibaseVersion")
                 implementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
-                implementation("org.hamcrest:hamcrest-library:2.1")
+                implementation("org.hamcrest:hamcrest-library:$hamcrestLibraryVersion")
             }
         }
 
         getByName("jsMain") {
             dependencies {
                 implementation(kotlin("stdlib-js"))
-                implementation("org.jetbrains:kotlin-react-dom:$kotlinReactVersion")
                 implementation("org.jetbrains:kotlin-react:$kotlinReactVersion")
+                implementation("org.jetbrains:kotlin-react-dom:$kotlinReactVersion")
+                implementation("org.jetbrains:kotlin-styled:$kotlinStyledVersion")
                 implementation("io.ktor:ktor-client-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
@@ -172,6 +175,11 @@ kotlinFrontend {
         devDependency("core-js")
         dependency("react")
         dependency("react-dom")
+        dependency("@jetbrains/kotlin-css")
+        dependency("@jetbrains/kotlin-css-js")
+        dependency("@jetbrains/kotlin-styled")
+        dependency("inline-style-prefixer")
+        dependency("styled-components")
     }
 }
 
