@@ -11,9 +11,8 @@ fun RBuilder.todoDone(done: Boolean, update: (Boolean) -> Unit) {
         attrs {
             defaultChecked = done
             onChangeFunction = { event ->
-                with(event.target as HTMLInputElement) {
-                    update(checked)
-                }
+                val target = event.target as HTMLInputElement
+                update(target.checked)
             }
         }
     }
