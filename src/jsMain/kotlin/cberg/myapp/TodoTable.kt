@@ -25,7 +25,7 @@ class TodoTable : RComponent<TodoTable.Props, RState>() {
                             +todo.description
                         }
                         td {
-                            todoDone(todo.done) { done ->
+                            checkbox(todo.done) { done ->
                                 props.update(todo.copy(done = done))
                             }
                         }

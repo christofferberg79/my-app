@@ -75,7 +75,6 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
             contentType(ContentType.Application.Json)
             body = TodoDraft(description)
         }
-        println("after post")
     }
 
     private suspend fun updateTodo(todo: Todo) {
