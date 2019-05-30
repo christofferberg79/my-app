@@ -22,10 +22,11 @@ import react.dom.h1
 import kotlin.browser.window
 
 class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope() {
-    lateinit var client: HttpClient
+    private lateinit var client: HttpClient
+    private var timeoutId: Int? = null
 
-    init {
-        state.todos = emptyList()
+    override fun State.init() {
+        todos = emptyList()
     }
 
     override fun componentDidMount() {
@@ -34,10 +35,15 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
                 serializer = KotlinxSerializer()
             }
         }
-        launch { fetchTodos() }
+        launch { reloadTodos() }
+        timeoutId = window.setInterval({launch { reloadTodos() }}, 5000)
     }
 
     override fun componentWillUnmount() {
+        timeoutId?.let {
+            window.clearInterval(it)
+            timeoutId = null
+        }
         cancel()
         client.close()
     }
@@ -45,30 +51,32 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
     private fun onAdd(description: String) {
         launch {
             createTodo(description)
-            fetchTodos()
+            reloadTodos()
         }
     }
 
     private fun onUpdate(todo: Todo) {
         launch {
             updateTodo(todo)
-            fetchTodos()
+            reloadTodos()
         }
     }
 
     private fun onDelete(id: String) {
         launch {
             deleteTodo(id)
-            fetchTodos()
+            reloadTodos()
         }
     }
 
-    private suspend fun fetchTodos() {
-        val newTodos = client.get<TodoList>("${window.location.origin}/todos").items
+    private suspend fun reloadTodos() {
+        val newTodos = getTodos().sortedBy { it.description }
         setState {
             todos = newTodos
         }
     }
+
+    private suspend fun getTodos() = client.get<TodoList>("${window.location.origin}/todos").items
 
     private suspend fun createTodo(description: String) {
         client.post<Unit>("${window.location.origin}/todos") {
