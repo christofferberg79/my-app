@@ -13,19 +13,19 @@ import react.dom.tr
 import styled.css
 import styled.styledDiv
 
-fun RBuilder.todoItem(todo: Todo, update: (Todo) -> Unit, delete: (String) -> Unit) {
+fun RBuilder.todoItem(todo: Todo, onDone: () -> Unit, onDelete: () -> Unit) {
 
     tr {
         key = todo.id
         td { +todo.description }
         td {
             checkbox(todo.done) {
-                update(todo.copy(done = it))
+                onDone()
             }
         }
         td {
             button("Delete") {
-                delete(todo.id)
+                onDelete()
             }
         }
     }
@@ -38,10 +38,10 @@ fun RBuilder.button(text: String, onClick: () -> Unit) {
     }
 }
 
-fun RBuilder.checkbox(value: Boolean, onClick: (Boolean) -> Unit) {
+fun RBuilder.checkbox(value: Boolean, onChange: (Boolean) -> Unit) {
     styledDiv {
         +if (value) "\u2611" else "\u2610"
-        attrs.onClickFunction = { onClick(!value) }
+        attrs.onClickFunction = { onChange(!value) }
         css {
             display = Display.inlineBlock
             lineHeight = 0.px.lh

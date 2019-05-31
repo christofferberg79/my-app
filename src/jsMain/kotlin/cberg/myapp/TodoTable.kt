@@ -4,7 +4,7 @@ import cberg.myapp.model.Todo
 import react.RBuilder
 import react.dom.*
 
-fun RBuilder.todoTable(todos: List<Todo>, delete: (String) -> Unit, update: (Todo) -> Unit) {
+fun RBuilder.todoTable(todos: List<Todo>, delete: (Todo) -> Unit, update: (Todo) -> Unit) {
     table {
         thead {
             tr {
@@ -14,24 +14,9 @@ fun RBuilder.todoTable(todos: List<Todo>, delete: (String) -> Unit, update: (Tod
         }
         tbody {
             todos.forEach { todo ->
-                todoItem(todo, update, delete)
-//                tr {
-//                    key = todo.id
-//                    td {
-//                        +todo.description
-//                    }
-//                    td {
-//                        checkbox(todo.done) { done ->
-//                            update(todo.copy(done = done))
-//                        }
-//                    }
-//                    td {
-//                        button {
-//                            +"Delete"
-//                            attrs.onClickFunction = { delete(todo.id) }
-//                        }
-//                    }
-//                }
+                todoItem(todo,
+                    onDone = { update(todo.copy(done = !todo.done)) },
+                    onDelete = { delete(todo) })
             }
         }
     }

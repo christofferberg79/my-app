@@ -36,7 +36,7 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
             }
         }
         launch { reloadTodos() }
-        timeoutId = window.setInterval({launch { reloadTodos() }}, 5000)
+        timeoutId = window.setInterval({ launch { reloadTodos() } }, 5000)
     }
 
     override fun componentWillUnmount() {
@@ -62,9 +62,9 @@ class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope
         }
     }
 
-    private fun onDelete(id: String) {
+    private fun onDelete(todo: Todo) {
         launch {
-            deleteTodo(id)
+            deleteTodo(todo.id)
             reloadTodos()
         }
     }
