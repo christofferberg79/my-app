@@ -13,20 +13,16 @@ import react.dom.tr
 import styled.css
 import styled.styledDiv
 
-fun RBuilder.todoItem(todo: Todo, onDone: () -> Unit, onDelete: () -> Unit) {
+fun RBuilder.todoItem(todo: Todo, onDone: (Boolean) -> Unit, onDelete: () -> Unit) {
 
     tr {
         key = todo.id
         td { +todo.description }
         td {
-            checkbox(todo.done) {
-                onDone()
-            }
+            checkbox(todo.done, onDone)
         }
         td {
-            button("Delete") {
-                onDelete()
-            }
+            button("Delete", onDelete)
         }
     }
 }

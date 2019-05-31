@@ -15,7 +15,7 @@ fun RBuilder.todoTable(todos: List<Todo>, delete: (Todo) -> Unit, update: (Todo)
         tbody {
             todos.forEach { todo ->
                 todoItem(todo,
-                    onDone = { update(todo.copy(done = !todo.done)) },
+                    onDone = { done -> update(todo.copy(done = done)) },
                     onDelete = { delete(todo) })
             }
         }
