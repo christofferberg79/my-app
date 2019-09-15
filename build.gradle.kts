@@ -2,11 +2,11 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.frontend.webpack.WebPackExtension
 
 plugins {
-    id("kotlin-multiplatform") version "1.3.31"
+    kotlin("multiplatform") version "1.3.50"
     id("org.jetbrains.kotlin.frontend") version "0.0.45"
-    id("kotlinx-serialization") version "1.3.31"
-    id("com.github.johnrengelman.shadow") version "5.0.0"
-    id("com.github.ben-manes.versions") version "0.21.0"
+    id("kotlinx-serialization") version "1.3.50"
+    id("com.github.johnrengelman.shadow") version "5.1.0"
+    id("com.github.ben-manes.versions") version "0.25.0"
     id("org.liquibase.gradle") version "2.0.1"
     id("net.saliman.properties") version "1.5.1"
 }
@@ -16,18 +16,18 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     jcenter()
-    maven("http://kotlin.bintray.com/ktor")
+    mavenCentral()
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
-val ktorVersion = "1.2.1"
+val ktorVersion = "1.2.4"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.13.7"
-val postgresqlDriverVersion = "42.2.5"
-val liquibaseVersion = "3.6.3"
+val exposedVersion = "0.17.3"
+val postgresqlDriverVersion = "42.2.8"
+val liquibaseVersion = "3.8.0"
 val liquibaseGroovyDslVersion = "2.0.3"
-val kotlinReactVersion = "16.6.0-pre.71-kotlin-1.3.31"
-val kotlinStyledVersion = "1.0.0-pre.71-kotlin-1.3.31"
+val kotlinReactVersion = "16.9.0-pre.83-kotlin-1.3.50"
+val kotlinStyledVersion = "1.0.0-pre.83-kotlin-1.3.50"
 val hamcrestLibraryVersion = "2.1"
 
 val jdbcDatabaseUrl: String? by project
@@ -54,11 +54,9 @@ kotlin {
 
         js {
             compilations.getByName("main") {
-                compileKotlinTask.configure {
-                    kotlinOptions {
-                        sourceMap = true
-                        moduleKind = "commonjs"
-                    }
+                compileKotlinTask.kotlinOptions {
+                    sourceMap = true
+                    moduleKind = "commonjs"
                 }
             }
         }
@@ -118,7 +116,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "5.4.1"
+        gradleVersion = "5.6.2"
     }
 
     register<Copy>("copyLiquibase") {

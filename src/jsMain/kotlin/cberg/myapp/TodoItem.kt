@@ -1,10 +1,8 @@
 package cberg.myapp
 
 import cberg.myapp.model.Todo
-import kotlinx.css.Cursor
-import kotlinx.css.Display
+import kotlinx.css.*
 import kotlinx.css.properties.lh
-import kotlinx.css.px
 import kotlinx.html.js.onClickFunction
 import react.RBuilder
 import react.dom.button
