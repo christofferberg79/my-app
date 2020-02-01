@@ -3,11 +3,11 @@ import org.jetbrains.kotlin.gradle.frontend.webpack.WebPackExtension
 
 plugins {
     kotlin("multiplatform") version "1.3.50"
-    id("org.jetbrains.kotlin.frontend") version "0.0.45"
+    kotlin("frontend") version "0.0.45"
     id("kotlinx-serialization") version "1.3.50"
-    id("com.github.johnrengelman.shadow") version "5.1.0"
-    id("com.github.ben-manes.versions") version "0.25.0"
-    id("org.liquibase.gradle") version "2.0.1"
+    id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("com.github.ben-manes.versions") version "0.27.0"
+    id("org.liquibase.gradle") version "2.0.2"
     id("net.saliman.properties") version "1.5.1"
 }
 
@@ -22,13 +22,13 @@ repositories {
 
 val ktorVersion = "1.2.4"
 val logbackVersion = "1.2.3"
-val exposedVersion = "0.17.3"
-val postgresqlDriverVersion = "42.2.8"
-val liquibaseVersion = "3.8.0"
-val liquibaseGroovyDslVersion = "2.0.3"
+val exposedVersion = "0.17.7"
+val postgresqlDriverVersion = "42.2.9"
+val liquibaseVersion = "3.8.5"
+val liquibaseGroovyDslVersion = "2.1.1"
 val kotlinReactVersion = "16.9.0-pre.83-kotlin-1.3.50"
 val kotlinStyledVersion = "1.0.0-pre.83-kotlin-1.3.50"
-val hamcrestLibraryVersion = "2.1"
+val hamcrestLibraryVersion = "2.2"
 
 val jdbcDatabaseUrl: String? by project
 
