@@ -1,10 +1,8 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.frontend.webpack.WebPackExtension
+//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("multiplatform") version "1.3.50"
-    kotlin("frontend") version "0.0.45"
-    id("kotlinx-serialization") version "1.3.50"
+    kotlin("multiplatform") version "1.3.61"
+    id("kotlinx-serialization") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.27.0"
     id("org.liquibase.gradle") version "2.0.2"
@@ -20,44 +18,58 @@ repositories {
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
-val ktorVersion = "1.2.4"
+val ktorVersion = "1.3.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
-val postgresqlDriverVersion = "42.2.9"
-val liquibaseVersion = "3.8.5"
+val postgresqlDriverVersion = "42.2.10"
+val liquibaseVersion = "3.8.6"
 val liquibaseGroovyDslVersion = "2.1.1"
-val kotlinReactVersion = "16.9.0-pre.83-kotlin-1.3.50"
-val kotlinStyledVersion = "1.0.0-pre.83-kotlin-1.3.50"
+val kotlinReactVersion = "16.9.0-pre.91-kotlin-1.3.61"
+val kotlinStyledVersion = "1.0.0-pre.91-kotlin-1.3.61"
 val hamcrestLibraryVersion = "2.2"
 
 val jdbcDatabaseUrl: String? by project
 
 kotlin {
-    targets {
-        jvm {
-            compilations.getByName("main") {
-                tasks {
-                    named<ShadowJar>("shadowJar") {
-                        from(output)
-                        configurations = listOf(project.configurations["jvmRuntimeClasspath"])
-
-                        archiveClassifier.set("")
-                        archiveVersion.set("")
-
-                        manifest {
-                            attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
-                        }
-                    }
+    jvm {
+        compilations.getByName("main") {
+            tasks {
+                register<JavaExec>("jvmServerRun") {
+                    classpath = output.allOutputs + configurations["jvmRuntimeClasspath"]
+                    main = "io.ktor.server.netty.EngineMain"
+                    jvmArgs("-DjdbcDatabaseUrl=$jdbcDatabaseUrl")
                 }
+
+//                named<ShadowJar>("shadowJar") {
+//                    from(output)
+//                    configurations = listOf(project.configurations["jvmRuntimeClasspath"])
+//
+//                    archiveClassifier.set("")
+//                    archiveVersion.set("")
+//
+//                    manifest {
+//                        attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
+//                    }
+//                }
             }
         }
+    }
 
-        js {
-            compilations.getByName("main") {
-                compileKotlinTask.kotlinOptions {
+    js {
+        browser {
+            compilations.all {
+                kotlinOptions {
                     sourceMap = true
                     moduleKind = "commonjs"
                 }
+            }
+
+            runTask {
+                outputFileName = "main.bundle.js"
+                devServer = devServer?.copy(
+                    port = 8088,
+                    proxy = mapOf("/todos" to "http://localhost:8080")
+                )
             }
         }
     }
@@ -94,6 +106,23 @@ kotlin {
                 implementation("io.ktor:ktor-client-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
+
+                implementation(npm("text-encoding", "0.7.0"))
+                implementation(npm("abort-controller", "3.0.0"))
+                implementation(npm("bufferutil", "4.0.1"))
+                implementation(npm("utf-8-validate", "5.0.2"))
+
+                implementation(npm("react", "16.9.0"))
+                implementation(npm("react-dom", "16.9.0"))
+                implementation(npm("react-is", "16.9.0"))
+                implementation(npm("@jetbrains/kotlin-extensions", "1.0.1-pre.91"))
+                implementation(npm("@jetbrains/kotlin-css", "1.0.0-pre.91"))
+                implementation(npm("@jetbrains/kotlin-css-js", "1.0.0-pre.91"))
+                implementation(npm("@jetbrains/kotlin-styled", "1.0.0-pre.91"))
+                implementation(npm("css-in-js-utils", "3.0.2"))
+                implementation(npm("core-js"))
+                implementation(npm("inline-style-prefixer"))
+                implementation(npm("styled-components", "4.3.2"))
             }
         }
     }
@@ -116,7 +145,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "5.6.2"
+        gradleVersion = "6.1.1"
     }
 
     register<Copy>("copyLiquibase") {
@@ -126,22 +155,22 @@ tasks {
         rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
     }
 
-    register<Copy>("copyBundleToKtor") {
-        group = "heroku setup"
-        dependsOn("bundle")
-        from("$buildDir/bundle")
-        from("src/jsMain/web")
-        into("$buildDir/processedResources/jvm/main/web")
-    }
+//    register<Copy>("copyBundleToKtor") {
+//        group = "heroku setup"
+//        dependsOn("bundle")
+//        from("$buildDir/bundle")
+//        from("src/jsMain/web")
+//        into("$buildDir/processedResources/jvm/main/web")
+//    }
 
-    register("stage") {
-        group = "heroku setup"
-        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
-    }
+//    register("stage") {
+//        group = "heroku setup"
+//        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
+//    }
 
-    named("shadowJar") {
-        mustRunAfter("copyBundleToKtor")
-    }
+//    named("shadowJar") {
+//        mustRunAfter("copyBundleToKtor")
+//    }
 
     dependencyUpdates {
         resolutionStrategy {
@@ -155,34 +184,4 @@ tasks {
             }
         }
     }
-}
-
-kotlinFrontend {
-    downloadNodeJsVersion = "10.15.0"
-
-    sourceMaps = true
-
-    bundle("webpack", delegateClosureOf<WebPackExtension> {
-        bundleName = "main"
-        proxyUrl = "http://localhost:8080"
-        contentPath = file("src/jsMain/web")
-    })
-
-    npm {
-        devDependency("text-encoding") // workaround for https://github.com/ktorio/ktor/issues/961
-        devDependency("core-js")
-        dependency("react")
-        dependency("react-dom")
-        dependency("@jetbrains/kotlin-css")
-        dependency("@jetbrains/kotlin-css-js")
-        dependency("@jetbrains/kotlin-styled")
-        dependency("inline-style-prefixer")
-        dependency("styled-components")
-    }
-}
-
-ktor {
-    port = 8080
-    mainClass = "io.ktor.server.netty.EngineMain"
-    jvmOptions = arrayOf("-DjdbcDatabaseUrl=$jdbcDatabaseUrl")
 }
