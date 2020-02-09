@@ -1,4 +1,4 @@
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("multiplatform") version "1.3.61"
@@ -7,6 +7,7 @@ plugins {
     id("com.github.ben-manes.versions") version "0.27.0"
     id("org.liquibase.gradle") version "2.0.2"
     id("net.saliman.properties") version "1.5.1"
+    java
 }
 
 group = "cberg"
@@ -40,17 +41,17 @@ kotlin {
                     jvmArgs("-DjdbcDatabaseUrl=$jdbcDatabaseUrl")
                 }
 
-//                named<ShadowJar>("shadowJar") {
-//                    from(output)
-//                    configurations = listOf(project.configurations["jvmRuntimeClasspath"])
-//
-//                    archiveClassifier.set("")
-//                    archiveVersion.set("")
-//
-//                    manifest {
-//                        attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
-//                    }
-//                }
+                named<ShadowJar>("shadowJar") {
+                    from(output)
+                    configurations = listOf(project.configurations["jvmRuntimeClasspath"])
+
+                    archiveClassifier.set("")
+                    archiveVersion.set("")
+
+                    manifest {
+                        attributes("Main-Class" to "io.ktor.server.netty.EngineMain")
+                    }
+                }
             }
         }
     }
@@ -62,6 +63,10 @@ kotlin {
                     sourceMap = true
                     moduleKind = "commonjs"
                 }
+            }
+
+            webpackTask {
+                outputFileName = "main.bundle.js"
             }
 
             runTask {
@@ -155,22 +160,22 @@ tasks {
         rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
     }
 
-//    register<Copy>("copyBundleToKtor") {
-//        group = "heroku setup"
-//        dependsOn("bundle")
-//        from("$buildDir/bundle")
-//        from("src/jsMain/web")
-//        into("$buildDir/processedResources/jvm/main/web")
-//    }
+    register<Copy>("copyBundleToKtor") {
+        group = "heroku setup"
+        dependsOn("jsBrowserWebpack", "jsProcessResources")
+        from("$buildDir/distributions")
+        from("$buildDir/processedResources/js/main")
+        into("$buildDir/processedResources/jvm/main/web")
+    }
 
-//    register("stage") {
-//        group = "heroku setup"
-//        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
-//    }
+    register("stage") {
+        group = "heroku setup"
+        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
+    }
 
-//    named("shadowJar") {
-//        mustRunAfter("copyBundleToKtor")
-//    }
+    named("shadowJar") {
+        mustRunAfter("copyBundleToKtor")
+    }
 
     dependencyUpdates {
         resolutionStrategy {
