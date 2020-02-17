@@ -114,8 +114,6 @@ kotlin {
 
                 implementation(npm("text-encoding", "0.7.0"))
                 implementation(npm("abort-controller", "3.0.0"))
-                implementation(npm("bufferutil", "4.0.1"))
-                implementation(npm("utf-8-validate", "5.0.2"))
 
                 implementation(npm("react", "16.9.0"))
                 implementation(npm("react-dom", "16.9.0"))
@@ -150,7 +148,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.1.1"
+        gradleVersion = "6.2"
     }
 
     register<Copy>("copyLiquibase") {
