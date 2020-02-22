@@ -4,7 +4,7 @@ plugins {
     kotlin("multiplatform") version "1.3.61"
     id("kotlinx-serialization") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("com.github.ben-manes.versions") version "0.27.0"
+    id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
     id("net.saliman.properties") version "1.5.1"
     java
@@ -23,7 +23,7 @@ val ktorVersion = "1.3.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.10"
-val liquibaseVersion = "3.8.6"
+val liquibaseVersion = "3.8.7"
 val liquibaseGroovyDslVersion = "2.1.1"
 val kotlinReactVersion = "16.9.0-pre.91-kotlin-1.3.61"
 val kotlinStyledVersion = "1.0.0-pre.91-kotlin-1.3.61"
@@ -148,7 +148,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.2"
+        gradleVersion = "6.2.1"
     }
 
     register<Copy>("copyLiquibase") {
