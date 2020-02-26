@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("multiplatform") version "1.3.61"
-    id("kotlinx-serialization") version "1.3.61"
+    kotlin("plugin.serialization") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
