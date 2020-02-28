@@ -3,7 +3,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     kotlin("multiplatform") version "1.3.70-eap-274"
-    kotlin("plugin.serialization") version "1.3.61"
+    kotlin("plugin.serialization") version "1.3.70-eap-274"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
@@ -26,8 +26,8 @@ val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.10"
 val liquibaseVersion = "3.8.7"
 val liquibaseGroovyDslVersion = "2.1.1"
-val kotlinReactVersion = "16.9.0-pre.91-kotlin-1.3.61"
-val kotlinStyledVersion = "1.0.0-pre.91-kotlin-1.3.61"
+val kotlinReactVersion = "16.13.0-pre.92-kotlin-1.3.61"
+val kotlinStyledVersion = "1.0.0-pre.92-kotlin-1.3.61"
 val hamcrestLibraryVersion = "2.2"
 
 val localProperties: Map<Any, Any?> = Properties().apply {
@@ -112,9 +112,9 @@ kotlin {
                 implementation(npm("text-encoding", "0.7.0"))
                 implementation(npm("abort-controller", "3.0.0"))
 
-                implementation(npm("react", "16.9.0"))
-                implementation(npm("react-dom", "16.9.0"))
-                implementation(npm("react-is", "16.9.0"))
+                implementation(npm("react", "16.13.0"))
+                implementation(npm("react-dom", "16.13.0"))
+                implementation(npm("react-is", "16.13.0"))
                 implementation(npm("css-in-js-utils", "3.0.2"))
                 implementation(npm("core-js"))
                 implementation(npm("inline-style-prefixer"))
