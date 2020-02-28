@@ -2,7 +2,7 @@ import java.util.Properties
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("multiplatform") version "1.3.61"
+    kotlin("multiplatform") version "1.3.70-eap-274"
     kotlin("plugin.serialization") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
@@ -16,10 +16,11 @@ version = "1.0-SNAPSHOT"
 repositories {
     jcenter()
     mavenCentral()
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
-val ktorVersion = "1.3.1"
+val ktorVersion = "1.3.0-rc3-1.3.70-eap-42"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.10"
@@ -36,6 +37,8 @@ val localProperties = Properties().apply {
     }
 }
 val jdbcDatabaseUrl: String by localProperties
+val distsDir: File by project
+val libsDir: File by project
 
 kotlin {
     jvm {
@@ -64,19 +67,7 @@ kotlin {
 
     js {
         browser {
-            compilations.all {
-                kotlinOptions {
-                    sourceMap = true
-                    moduleKind = "commonjs"
-                }
-            }
-
-            webpackTask {
-                outputFileName = "main.bundle.js"
-            }
-
             runTask {
-                outputFileName = "main.bundle.js"
                 devServer = devServer?.copy(
                     port = 8088,
                     proxy = mapOf("/todos" to "http://localhost:8080")
@@ -124,10 +115,6 @@ kotlin {
                 implementation(npm("react", "16.9.0"))
                 implementation(npm("react-dom", "16.9.0"))
                 implementation(npm("react-is", "16.9.0"))
-                implementation(npm("@jetbrains/kotlin-extensions", "1.0.1-pre.91"))
-                implementation(npm("@jetbrains/kotlin-css", "1.0.0-pre.91"))
-                implementation(npm("@jetbrains/kotlin-css-js", "1.0.0-pre.91"))
-                implementation(npm("@jetbrains/kotlin-styled", "1.0.0-pre.91"))
                 implementation(npm("css-in-js-utils", "3.0.2"))
                 implementation(npm("core-js"))
                 implementation(npm("inline-style-prefixer"))
@@ -160,15 +147,14 @@ tasks {
     register<Copy>("copyLiquibase") {
         group = "heroku setup"
         from(configurations.liquibaseRuntime)
-        into("$buildDir/libs/liquibase")
+        into("$libsDir/liquibase")
         rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
     }
 
     register<Copy>("copyBundleToKtor") {
         group = "heroku setup"
-        dependsOn("jsBrowserWebpack", "jsProcessResources")
-        from("$buildDir/distributions")
-        from("$buildDir/processedResources/js/main")
+        dependsOn("jsBrowserDevelopmentWebpack")
+        from("$distsDir")
         into("$buildDir/processedResources/jvm/main/web")
     }
 
