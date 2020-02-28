@@ -67,6 +67,10 @@ kotlin {
 
     js {
         browser {
+            dceTask {
+                // workaround for https://github.com/ktorio/ktor/issues/1339
+                keep("ktor-ktor-io.\$\$importsForInline\$\$.ktor-ktor-io.io.ktor.utils.io")
+            }
             runTask {
                 devServer = devServer?.copy(
                     port = 8088,
@@ -153,7 +157,7 @@ tasks {
 
     register<Copy>("copyBundleToKtor") {
         group = "heroku setup"
-        dependsOn("jsBrowserDevelopmentWebpack")
+        dependsOn("jsBrowserDistribution")
         from("$distsDir")
         into("$buildDir/processedResources/jvm/main/web")
     }
