@@ -30,13 +30,13 @@ val kotlinReactVersion = "16.9.0-pre.91-kotlin-1.3.61"
 val kotlinStyledVersion = "1.0.0-pre.91-kotlin-1.3.61"
 val hamcrestLibraryVersion = "2.2"
 
-val localProperties = Properties().apply {
+val localProperties: Map<Any, Any?> = Properties().apply {
     val file = file("local.properties")
     if (file.exists()) {
         load(file.inputStream())
     }
-}
-val jdbcDatabaseUrl: String by localProperties
+}.withDefault { null }
+val jdbcDatabaseUrl: String? by localProperties
 val distsDir: File by project
 val libsDir: File by project
 
