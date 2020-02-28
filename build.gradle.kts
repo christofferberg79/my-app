@@ -1,3 +1,4 @@
+import java.util.Properties
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
@@ -6,7 +7,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
-    id("net.saliman.properties") version "1.5.1"
     java
 }
 
@@ -29,7 +29,13 @@ val kotlinReactVersion = "16.9.0-pre.91-kotlin-1.3.61"
 val kotlinStyledVersion = "1.0.0-pre.91-kotlin-1.3.61"
 val hamcrestLibraryVersion = "2.2"
 
-val jdbcDatabaseUrl: String? by project
+
+val localProperties = Properties()
+val file = rootProject.file("local.properties")
+if (file.exists()) {
+    localProperties.load(file.inputStream())
+}
+val jdbcDatabaseUrl = localProperties["jdbcDatabaseUrl"]
 
 kotlin {
     jvm {
