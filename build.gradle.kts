@@ -20,25 +20,22 @@ repositories {
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
+loadLocalProperties()
+
+val jdbcDatabaseUrl: String? by project
+val distsDir: File by project
+val libsDir: File by project
+
 val ktorVersion = "1.3.0-rc3-1.3.70-eap-42"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.10"
 val liquibaseVersion = "3.8.7"
 val liquibaseGroovyDslVersion = "2.1.1"
-val kotlinReactVersion = "16.13.0-pre.92-kotlin-1.3.61"
+val reactVersion = "16.13.0"
+val kotlinReactVersion = "$reactVersion-pre.92-kotlin-1.3.61"
 val kotlinStyledVersion = "1.0.0-pre.92-kotlin-1.3.61"
 val hamcrestLibraryVersion = "2.2"
-
-val localProperties: Map<Any, Any?> = Properties().apply {
-    val file = file("local.properties")
-    if (file.exists()) {
-        load(file.inputStream())
-    }
-}.withDefault { null }
-val jdbcDatabaseUrl: String? by localProperties
-val distsDir: File by project
-val libsDir: File by project
 
 kotlin {
     jvm {
@@ -67,6 +64,7 @@ kotlin {
 
     js {
         browser {
+            @Suppress("EXPERIMENTAL_API_USAGE")
             dceTask {
                 // workaround for https://github.com/ktorio/ktor/issues/1339
                 keep("ktor-ktor-io.\$\$importsForInline\$\$.ktor-ktor-io.io.ktor.utils.io")
@@ -116,13 +114,11 @@ kotlin {
                 implementation(npm("text-encoding", "0.7.0"))
                 implementation(npm("abort-controller", "3.0.0"))
 
-                implementation(npm("react", "16.13.0"))
-                implementation(npm("react-dom", "16.13.0"))
-                implementation(npm("react-is", "16.13.0"))
-                implementation(npm("css-in-js-utils", "3.0.2"))
-                implementation(npm("core-js"))
-                implementation(npm("inline-style-prefixer"))
-                implementation(npm("styled-components", "4.3.2"))
+                implementation(npm("react", reactVersion))
+                implementation(npm("react-dom", reactVersion))
+                implementation(npm("react-is", reactVersion))
+                implementation(npm("inline-style-prefixer", "5.1.2"))
+                implementation(npm("styled-components", "5.0.1"))
             }
         }
     }
@@ -180,6 +176,19 @@ tasks {
                 if (rejected) {
                     reject("Release candidate")
                 }
+            }
+        }
+    }
+}
+
+fun loadLocalProperties() {
+    val file = file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use {stream ->
+            val props = Properties()
+            props.load(stream)
+            for (name in props.stringPropertyNames()) {
+                extra[name] = props.getProperty(name)
             }
         }
     }
