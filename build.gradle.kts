@@ -7,7 +7,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
-    java
 }
 
 group = "cberg"
@@ -47,7 +46,9 @@ kotlin {
                     jvmArgs("-DjdbcDatabaseUrl=$jdbcDatabaseUrl")
                 }
 
-                named<ShadowJar>("shadowJar") {
+                register<ShadowJar>("fatJar") {
+                    group = "heroku setup"
+
                     from(output)
                     configurations = listOf(project.configurations["jvmRuntimeClasspath"])
 
@@ -64,11 +65,12 @@ kotlin {
 
     js {
         browser {
+            // workaround for https://github.com/ktorio/ktor/issues/1339
             @Suppress("EXPERIMENTAL_API_USAGE")
             dceTask {
-                // workaround for https://github.com/ktorio/ktor/issues/1339
                 keep("ktor-ktor-io.\$\$importsForInline\$\$.ktor-ktor-io.io.ktor.utils.io")
             }
+
             runTask {
                 devServer = devServer?.copy(
                     port = 8088,
@@ -151,20 +153,23 @@ tasks {
         rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
     }
 
-    register<Copy>("copyBundleToKtor") {
+    register<Copy>("copyJsBundleToKtor") {
         group = "heroku setup"
-        dependsOn("jsBrowserDistribution")
         from("$distsDir")
         into("$buildDir/processedResources/jvm/main/web")
     }
 
     register("stage") {
         group = "heroku setup"
-        dependsOn("copyBundleToKtor", "shadowJar", "copyLiquibase")
+        dependsOn("jsBrowserDistribution", "copyJsBundleToKtor", "fatJar", "copyLiquibase")
     }
 
-    named("shadowJar") {
-        mustRunAfter("copyBundleToKtor")
+    named("copyJsBundleToKtor") {
+        mustRunAfter("jsBrowserDistribution")
+    }
+
+    named("fatJar") {
+        mustRunAfter("copyJsBundleToKtor")
     }
 
     dependencyUpdates {
@@ -182,14 +187,10 @@ tasks {
 }
 
 fun loadLocalProperties() {
-    val file = file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use {stream ->
-            val props = Properties()
-            props.load(stream)
-            for (name in props.stringPropertyNames()) {
-                extra[name] = props.getProperty(name)
-            }
+    file("local.properties").takeIf { it.exists() }?.inputStream()?.use { stream ->
+        val props = Properties().apply { load(stream) }
+        for (name in props.stringPropertyNames()) {
+            extra[name] = props.getProperty(name)
         }
     }
 }
