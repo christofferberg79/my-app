@@ -2,7 +2,6 @@ package cberg.myapp
 
 import cberg.myapp.model.Todo
 import cberg.myapp.model.TodoDraft
-import cberg.myapp.model.TodoList
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.js.Js
 import io.ktor.client.features.json.JsonFeature
@@ -29,7 +28,7 @@ class TodoClient {
 
     fun close() = client.close()
 
-    suspend fun get() = client.get<TodoList>(todosUrl).items
+    suspend fun get() = client.get<List<Todo>>(todosUrl)
 
     suspend fun create(description: String) = client.post<Unit>(todosUrl) {
         contentType(ContentType.Application.Json)
