@@ -1,5 +1,6 @@
 package cberg.myapp.model
 
+import kotlinx.serialization.*
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
@@ -10,7 +11,14 @@ interface Todo {
     val done: Boolean
 }
 
-data class TodoWithId(val id: UUID, override val description: String, override val done: Boolean) : Todo
+@Serializable
+data class TodoWithId(
+    @Serializable(UUIDSeralizer::class) val id: UUID,
+    override val description: String,
+    override val done: Boolean
+) : Todo
+
+@Serializable
 data class TodoDraft(override val description: String, override val done: Boolean) : Todo
 
 fun TodoDraft.withId() = TodoWithId(UUID.randomUUID(), description, done)
@@ -36,3 +44,16 @@ fun Todo(row: ResultRow): Todo = TodoWithId(
     description = row[Todos.description],
     done = row[Todos.done]
 )
+
+@Serializer(UUID::class)
+object UUIDSeralizer : KSerializer<UUID> {
+    override val descriptor = PrimitiveDescriptor("UUID", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: UUID) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): UUID {
+        return UUID.fromString(decoder.decodeString())
+    }
+}

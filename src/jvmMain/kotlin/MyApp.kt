@@ -1,7 +1,6 @@
 package cberg.myapp
 
 import cberg.myapp.model.*
-import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -15,24 +14,25 @@ import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.content.defaultResource
 import io.ktor.http.content.resources
 import io.ktor.http.content.static
-import io.ktor.jackson.jackson
 import io.ktor.request.receive
 import io.ktor.request.uri
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.serialization.json
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.json.JsonConfiguration
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
 import java.util.*
 
+@UnstableDefault
 @KtorExperimentalAPI
 fun Application.main() {
     install(ContentNegotiation) {
-        jackson {
-            enable(SerializationFeature.INDENT_OUTPUT)
-        }
+        json(JsonConfiguration.Default.copy(prettyPrint = true))
     }
 
     Database.connect(getNewConnection = {

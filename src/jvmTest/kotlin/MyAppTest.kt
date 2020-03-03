@@ -19,6 +19,7 @@ import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.serialization.UnstableDefault
 import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
@@ -41,6 +42,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 @KtorExperimentalAPI
+@UnstableDefault
 class AppTest {
     companion object {
         const val TODOS_PATH = "/todos"
