@@ -68,7 +68,7 @@ fun Application.main() {
 
             route("{id}") {
                 get {
-                    val id = uuidOrNotFoundException(call.parameters["id"])
+                    val id = call.parameters["id"].toUuidOrNotFoundException()
                     val todo = transaction {
                         Todos.select { Todos.id eq id }.singleOrNull()
                             ?.let { Todo(it) }
@@ -78,7 +78,7 @@ fun Application.main() {
                 }
 
                 put {
-                    val id = uuidOrNotFoundException(call.parameters["id"])
+                    val id = call.parameters["id"].toUuidOrNotFoundException()
                     val draft = call.receiveOrBadRequestException<TodoDraft>()
                     val found = transaction {
                         val count = Todos.update(where = { Todos.id eq id }) { statement ->
@@ -91,7 +91,7 @@ fun Application.main() {
                 }
 
                 delete {
-                    val id = uuidOrNotFoundException(call.parameters["id"])
+                    val id = call.parameters["id"].toUuidOrNotFoundException()
                     val found = transaction {
                         val count = Todos.deleteWhere { Todos.id eq id }
                         count > 0
@@ -112,9 +112,9 @@ private fun Boolean.orNotFoundException() {
 }
 
 @KtorExperimentalAPI
-private fun uuidOrNotFoundException(s: String?) =
+private fun String?.toUuidOrNotFoundException() =
     try {
-        UUID.fromString(s)
+        UUID.fromString(this)
     } catch (e: IllegalArgumentException) {
         throw NotFoundException()
     }
