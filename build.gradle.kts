@@ -2,8 +2,8 @@ import java.util.Properties
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("multiplatform") version "1.3.70-eap-274"
-    kotlin("plugin.serialization") version "1.3.70-eap-274"
+    kotlin("multiplatform") version "1.3.70"
+    kotlin("plugin.serialization") version "1.3.70"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("com.github.ben-manes.versions") version "0.28.0"
     id("org.liquibase.gradle") version "2.0.2"
@@ -14,8 +14,6 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     jcenter()
-    mavenCentral()
-    maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
@@ -25,7 +23,7 @@ val jdbcDatabaseUrl: String? by project
 val distsDir: File by project
 val libsDir: File by project
 
-val ktorVersion = "1.3.0-rc3-1.3.70-eap-42"
+val ktorVersion = "1.3.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.10"
@@ -143,7 +141,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.2.1"
+        gradleVersion = "6.2.2"
     }
 
     register<Copy>("copyLiquibase") {
