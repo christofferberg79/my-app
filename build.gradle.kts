@@ -14,6 +14,7 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     jcenter()
+    mavenCentral()
     maven("https://kotlin.bintray.com/kotlin-js-wrappers")
 }
 
@@ -30,8 +31,8 @@ val postgresqlDriverVersion = "42.2.10"
 val liquibaseVersion = "3.8.7"
 val liquibaseGroovyDslVersion = "2.1.1"
 val reactVersion = "16.13.0"
-val kotlinReactVersion = "$reactVersion-pre.92-kotlin-1.3.61"
-val kotlinStyledVersion = "1.0.0-pre.92-kotlin-1.3.61"
+val kotlinReactVersion = "$reactVersion-pre.93-kotlin-1.3.70"
+val kotlinStyledVersion = "1.0.0-pre.93-kotlin-1.3.70"
 val hamcrestLibraryVersion = "2.2"
 
 kotlin {
@@ -81,7 +82,7 @@ kotlin {
     sourceSets {
         getByName("jvmMain") {
             dependencies {
-                implementation(kotlin("stdlib-jdk8"))
+                implementation(kotlin("stdlib"))
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-html-builder:$ktorVersion")
                 implementation("io.ktor:ktor-jackson:$ktorVersion")
@@ -148,7 +149,7 @@ tasks {
         group = "heroku setup"
         from(configurations.liquibaseRuntime)
         into("$libsDir/liquibase")
-        rename("-\\d+(\\.\\d+)*\\.jar$", ".jar")
+        rename("""-\d+(\.\d+)*\.jar$""", ".jar")
     }
 
     register<Copy>("copyJsBundleToKtor") {
@@ -159,11 +160,11 @@ tasks {
 
     register("stage") {
         group = "heroku setup"
-        dependsOn("jsBrowserDistribution", "copyJsBundleToKtor", "fatJar", "copyLiquibase")
+        dependsOn("jsBrowserProductionWebpack", "copyJsBundleToKtor", "fatJar", "copyLiquibase")
     }
 
     named("copyJsBundleToKtor") {
-        mustRunAfter("jsBrowserDistribution")
+        mustRunAfter("jsBrowserProductionWebpack")
     }
 
     named("fatJar") {
