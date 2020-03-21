@@ -24,15 +24,15 @@ val jdbcDatabaseUrl: String? by project
 val distsDir: File by project
 val libsDir: File by project
 
-val ktorVersion = "1.3.1"
+val ktorVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
-val postgresqlDriverVersion = "42.2.10"
-val liquibaseVersion = "3.8.7"
+val postgresqlDriverVersion = "42.2.11"
+val liquibaseVersion = "3.8.8"
 val liquibaseGroovyDslVersion = "2.1.1"
 val reactVersion = "16.13.0"
-val kotlinReactVersion = "$reactVersion-pre.93-kotlin-1.3.70"
-val kotlinStyledVersion = "1.0.0-pre.93-kotlin-1.3.70"
+val kotlinReactVersion = "$reactVersion-pre.94-kotlin-1.3.70"
+val kotlinStyledVersion = "1.0.0-pre.94-kotlin-1.3.70"
 val hamcrestLibraryVersion = "2.2"
 
 kotlin {
