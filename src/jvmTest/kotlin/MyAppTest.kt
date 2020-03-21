@@ -1,8 +1,6 @@
 package cberg.myapp
 
 import cberg.myapp.model.*
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.ktor.application.Application
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -20,6 +18,9 @@ import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.builtins.list
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
 import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
@@ -48,6 +49,8 @@ class AppTest {
         const val TODOS_PATH = "/todos"
         const val ID_PATTERN = "\\p{Graph}+"
         const val MALFORMED_ID = "invalid UUID"
+
+        val json = Json(JsonConfiguration.Default)
 
         @BeforeClass
         @JvmStatic
@@ -78,7 +81,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val todos = call.response.content?.let { jacksonObjectMapper().readValue<List<Todo>>(it) }
+        val todos = call.response.content?.let { json.parse(TodoWithId.serializer().list, it) }
         assertEquals(emptyList(), todos)
     }
 
@@ -98,7 +101,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val todos = call.response.content?.let { jacksonObjectMapper().readValue<List<TodoWithId>>(it) }
+        val todos = call.response.content?.let { json.parse(TodoWithId.serializer().list, it) }
         assertEquals(listOf(todo), todos)
     }
 
@@ -108,7 +111,7 @@ class AppTest {
         val draft = testDraft()
         val call = handleRequest(Post, TODOS_PATH) {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(draft))
+            setBody(json.stringify(TodoDraft.serializer(), draft))
         }
 
         // Check response
@@ -152,7 +155,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val receivedTodo = call.response.content?.let { jacksonObjectMapper().readValue<TodoWithId>(it) }
+        val receivedTodo = call.response.content?.let { json.parse(TodoWithId.serializer(), it) }
         assertEquals(todo, receivedTodo)
     }
 
@@ -219,7 +222,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${todo.id}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(draft))
+            setBody(json.stringify(TodoDraft.serializer(), draft))
         }
 
         // Check response
@@ -259,7 +262,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${UUID.randomUUID()}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(draft))
+            setBody(json.stringify(TodoDraft.serializer(), draft))
         }
         assertEquals(NotFound, call.response.status())
     }
@@ -269,7 +272,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/$MALFORMED_ID") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(jacksonObjectMapper().writeValueAsString(draft))
+            setBody(json.stringify(TodoDraft.serializer(), draft))
         }
         assertEquals(NotFound, call.response.status())
     }

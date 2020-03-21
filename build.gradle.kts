@@ -96,7 +96,6 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation("io.ktor:ktor-server-test-host:$ktorVersion")
-                implementation("io.ktor:ktor-jackson:$ktorVersion")
                 implementation("org.liquibase:liquibase-core:$liquibaseVersion")
                 implementation("org.liquibase:liquibase-groovy-dsl:$liquibaseGroovyDslVersion")
                 implementation("org.hamcrest:hamcrest-library:$hamcrestLibraryVersion")
