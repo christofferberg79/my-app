@@ -142,7 +142,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.2.2"
+        gradleVersion = "6.3"
     }
 
     register<Copy>("copyLiquibase") {
@@ -174,7 +174,7 @@ tasks {
     dependencyUpdates {
         resolutionStrategy {
             componentSelection.all {
-                val rejected = listOf("alpha", "beta", "rc", "cr", "m", "preview", "eap")
+                val rejected = listOf("alpha", "beta", "rc", "cr", "m((\\d*)-release)?", "preview", "eap")
                     .map { Regex(".*[.-]$it[.\\d-]*", RegexOption.IGNORE_CASE) }
                     .any { candidate.version.matches(it) }
                 if (rejected) {
