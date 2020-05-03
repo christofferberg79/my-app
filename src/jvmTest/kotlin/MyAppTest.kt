@@ -124,7 +124,7 @@ class AppTest {
         val id = UUID.fromString(location.substring("$TODOS_PATH/".length))
         val todo = transaction {
             Todos.select { Todos.id eq id }
-                .map { Todo(it) }
+                .map { TodoWithId(it) }
                 .single()
         }
         assertEquals(draft.description, todo.description)
@@ -231,7 +231,7 @@ class AppTest {
         // Check data in database
         val todo2 = transaction {
             Todos.select { Todos.id eq todo.id }
-                .map { Todo(it) }
+                .map { TodoWithId(it) }
                 .single()
         }
         assertEquals(draft.description, todo2.description)

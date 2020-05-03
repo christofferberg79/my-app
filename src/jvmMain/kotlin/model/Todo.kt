@@ -39,7 +39,7 @@ fun Todos.set(statement: UpdateBuilder<Number>, todo: Todo) {
     statement[done] = todo.done
 }
 
-fun Todo(row: ResultRow): Todo = TodoWithId(
+fun TodoWithId(row: ResultRow): Todo = TodoWithId(
     id = row[Todos.id],
     description = row[Todos.description],
     done = row[Todos.done]

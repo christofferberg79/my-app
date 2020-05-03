@@ -49,7 +49,7 @@ fun Application.main() {
         route("todos") {
             get {
                 val todos = transaction {
-                    Todos.selectAll().map { Todo(it) }
+                    Todos.selectAll().map { TodoWithId(it) }
                 }
                 call.respond(todos)
             }
@@ -71,7 +71,7 @@ fun Application.main() {
                     val id = call.parameters["id"].toUuidOrNotFoundException()
                     val todo = transaction {
                         Todos.select { Todos.id eq id }.singleOrNull()
-                            ?.let { Todo(it) }
+                            ?.let { TodoWithId(it) }
                             ?: throw NotFoundException()
                     }
                     call.respond(todo)
