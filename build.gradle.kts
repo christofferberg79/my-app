@@ -28,11 +28,11 @@ val ktorVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
 val postgresqlDriverVersion = "42.2.12"
-val liquibaseVersion = "3.8.9"
+val liquibaseVersion = "3.9.0"
 val liquibaseGroovyDslVersion = "2.1.1"
 val reactVersion = "16.13.1"
-val kotlinReactVersion = "$reactVersion-pre.104-kotlin-1.3.72"
-val kotlinStyledVersion = "1.0.0-pre.104-kotlin-1.3.72"
+val kotlinReactVersion = "$reactVersion-pre.105-kotlin-1.3.72"
+val kotlinStyledVersion = "1.0.0-pre.105-kotlin-1.3.72"
 val hamcrestLibraryVersion = "2.2"
 
 kotlin {
@@ -118,8 +118,8 @@ kotlin {
                 implementation(npm("react", reactVersion))
                 implementation(npm("react-dom", reactVersion))
                 implementation(npm("react-is", reactVersion))
-                implementation(npm("inline-style-prefixer", "5.1.2"))
-                implementation(npm("styled-components", "5.0.1"))
+                implementation(npm("inline-style-prefixer", "6.0.0"))
+                implementation(npm("styled-components", "5.1.0"))
             }
         }
     }
@@ -142,7 +142,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.3"
+        gradleVersion = "6.4.1"
     }
 
     register<Copy>("copyLiquibase") {
