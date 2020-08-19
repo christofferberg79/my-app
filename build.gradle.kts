@@ -4,9 +4,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     kotlin("multiplatform") version "1.3.72"
     kotlin("plugin.serialization") version "1.3.72"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("com.github.ben-manes.versions") version "0.28.0"
-    id("org.liquibase.gradle") version "2.0.2"
+    id("com.github.johnrengelman.shadow") version "6.0.0"
+    id("com.github.ben-manes.versions") version "0.29.0"
+    id("org.liquibase.gradle") version "2.0.4"
 }
 
 group = "cberg"
@@ -27,9 +27,9 @@ val libsDir: File by project
 val ktorVersion = "1.3.2"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
-val postgresqlDriverVersion = "42.2.12"
+val postgresqlDriverVersion = "42.2.15"
 val liquibaseVersion = "3.9.0"
-val liquibaseGroovyDslVersion = "2.1.1"
+val liquibaseGroovyDslVersion = "2.1.2"
 val reactVersion = "16.13.1"
 val kotlinReactVersion = "$reactVersion-pre.105-kotlin-1.3.72"
 val kotlinStyledVersion = "1.0.0-pre.105-kotlin-1.3.72"
@@ -142,7 +142,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.4.1"
+        gradleVersion = "6.6"
     }
 
     register<Copy>("copyLiquibase") {
