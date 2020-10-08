@@ -69,6 +69,7 @@ kotlin {
             runTask {
                 devServer = devServer?.copy(
                     port = 8088,
+                    open = false,
                     proxy = mapOf("/todos" to "http://localhost:8080")
                 )
             }
