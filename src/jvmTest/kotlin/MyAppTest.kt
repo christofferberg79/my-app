@@ -1,9 +1,8 @@
 package cberg.myapp
 
 import cberg.myapp.model.*
-import io.ktor.application.Application
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
+import io.ktor.application.*
+import io.ktor.http.*
 import io.ktor.http.HttpMethod.Companion.Delete
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpMethod.Companion.Post
@@ -13,14 +12,11 @@ import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
-import io.ktor.server.testing.withTestApplication
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.serialization.UnstableDefault
-import kotlinx.serialization.builtins.list
+import io.ktor.server.testing.*
+import io.ktor.util.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import liquibase.Contexts
 import liquibase.Liquibase
 import liquibase.database.DatabaseFactory
@@ -35,6 +31,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
+import java.io.File
 import java.sql.DriverManager
 import java.util.*
 import kotlin.test.BeforeTest
@@ -43,14 +40,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 @KtorExperimentalAPI
-@UnstableDefault
 class AppTest {
     companion object {
         const val TODOS_PATH = "/todos"
         const val ID_PATTERN = "\\p{Graph}+"
         const val MALFORMED_ID = "invalid UUID"
-
-        val json = Json(JsonConfiguration.Default)
 
         @BeforeClass
         @JvmStatic
@@ -60,7 +54,8 @@ class AppTest {
 
             val connection = DriverManager.getConnection(dbUrl)
             val database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(JdbcConnection(connection))
-            val liquibase = Liquibase("db/changelog.groovy", FileSystemResourceAccessor(), database)
+            val resourceAccessor = FileSystemResourceAccessor(File("").absoluteFile)
+            val liquibase = Liquibase("db/changelog.groovy", resourceAccessor, database)
             liquibase.update(Contexts())
 
             Database.connect(getNewConnection = { connection })
@@ -81,7 +76,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val todos = call.response.content?.let { json.parse(TodoWithId.serializer().list, it) }
+        val todos = call.response.content?.let { Json.decodeFromString<List<Todo>>(it) }
         assertEquals(emptyList(), todos)
     }
 
@@ -101,7 +96,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val todos = call.response.content?.let { json.parse(TodoWithId.serializer().list, it) }
+        val todos = call.response.content?.let { Json.decodeFromString<List<TodoWithId>>(it) }
         assertEquals(listOf(todo), todos)
     }
 
@@ -111,7 +106,7 @@ class AppTest {
         val draft = testDraft()
         val call = handleRequest(Post, TODOS_PATH) {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(json.stringify(TodoDraft.serializer(), draft))
+            setBody(Json.encodeToString(draft))
         }
 
         // Check response
@@ -155,7 +150,7 @@ class AppTest {
 
         // Check response
         assertEquals(OK, call.response.status())
-        val receivedTodo = call.response.content?.let { json.parse(TodoWithId.serializer(), it) }
+        val receivedTodo = call.response.content?.let { Json.decodeFromString<TodoWithId>(it) }
         assertEquals(todo, receivedTodo)
     }
 
@@ -222,7 +217,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${todo.id}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(json.stringify(TodoDraft.serializer(), draft))
+            setBody(Json.encodeToString(draft))
         }
 
         // Check response
@@ -262,7 +257,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/${UUID.randomUUID()}") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(json.stringify(TodoDraft.serializer(), draft))
+            setBody(Json.encodeToString(draft))
         }
         assertEquals(NotFound, call.response.status())
     }
@@ -272,7 +267,7 @@ class AppTest {
         val draft = testDraft("test2")
         val call = handleRequest(Put, "$TODOS_PATH/$MALFORMED_ID") {
             addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(json.stringify(TodoDraft.serializer(), draft))
+            setBody(Json.encodeToString(draft))
         }
         assertEquals(NotFound, call.response.status())
     }
