@@ -11,14 +11,12 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
-import io.ktor.util.*
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
 import java.util.*
 
-@KtorExperimentalAPI
 fun Application.main() {
     install(ContentNegotiation) {
         json(Json { prettyPrint = true })
@@ -93,14 +91,12 @@ fun Application.main() {
     }
 }
 
-@KtorExperimentalAPI
 private fun Boolean.orNotFoundException() {
     if (!this) {
         throw NotFoundException()
     }
 }
 
-@KtorExperimentalAPI
 private fun String?.toUuidOrNotFoundException() =
     try {
         UUID.fromString(this)
@@ -108,7 +104,6 @@ private fun String?.toUuidOrNotFoundException() =
         throw NotFoundException()
     }
 
-@KtorExperimentalAPI
 suspend inline fun <reified T : Any> ApplicationCall.receiveOrBadRequestException() =
     try {
         receive(T::class)
