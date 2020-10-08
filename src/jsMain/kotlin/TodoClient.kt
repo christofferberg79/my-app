@@ -2,19 +2,13 @@ package cberg.myapp
 
 import cberg.myapp.model.Todo
 import cberg.myapp.model.TodoDraft
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.js.Js
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.http.ContentType
-import io.ktor.http.URLBuilder
-import io.ktor.http.Url
-import io.ktor.http.contentType
-import kotlin.browser.window
+import io.ktor.client.*
+import io.ktor.client.engine.js.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import kotlinx.browser.window
 
 class TodoClient {
     private val baseUrl = Url(window.location.origin)

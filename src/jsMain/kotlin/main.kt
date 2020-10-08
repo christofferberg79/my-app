@@ -1,8 +1,8 @@
 package cberg.myapp
 
+import kotlinx.browser.document
+import kotlinx.browser.window
 import react.dom.render
-import kotlin.browser.document
-import kotlin.browser.window
 
 fun main() {
     window.onload = {

@@ -1,13 +1,13 @@
 package cberg.myapp
 
 import cberg.myapp.model.Todo
+import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import react.*
 import react.dom.h1
-import kotlin.browser.window
 
 class TodoApp : RComponent<RProps, TodoApp.State>(), CoroutineScope by MainScope() {
     private lateinit var client: TodoClient

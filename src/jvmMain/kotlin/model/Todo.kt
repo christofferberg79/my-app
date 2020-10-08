@@ -1,6 +1,12 @@
 package cberg.myapp.model
 
-import kotlinx.serialization.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
@@ -47,7 +53,7 @@ fun TodoWithId(row: ResultRow): Todo = TodoWithId(
 
 @Serializer(UUID::class)
 object UUIDSeralizer : KSerializer<UUID> {
-    override val descriptor = PrimitiveDescriptor("UUID", PrimitiveKind.STRING)
+    override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: UUID) {
         encoder.encodeString(value.toString())

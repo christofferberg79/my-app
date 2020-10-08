@@ -1,38 +1,27 @@
 package cberg.myapp
 
 import cberg.myapp.model.*
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.BadRequestException
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.NotFoundException
+import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.http.HttpHeaders.Location
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.NoContent
-import io.ktor.http.content.defaultResource
-import io.ktor.http.content.resources
-import io.ktor.http.content.static
-import io.ktor.request.receive
-import io.ktor.request.uri
-import io.ktor.response.header
-import io.ktor.response.respond
+import io.ktor.http.content.*
+import io.ktor.request.*
+import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.serialization.json
-import io.ktor.util.KtorExperimentalAPI
-import kotlinx.serialization.UnstableDefault
-import kotlinx.serialization.json.JsonConfiguration
+import io.ktor.serialization.*
+import io.ktor.util.*
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.DriverManager
 import java.util.*
 
-@UnstableDefault
 @KtorExperimentalAPI
 fun Application.main() {
     install(ContentNegotiation) {
-        json(JsonConfiguration.Default.copy(prettyPrint = true))
+        json(Json { prettyPrint = true })
     }
 
     Database.connect(getNewConnection = {

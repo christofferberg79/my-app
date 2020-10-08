@@ -2,10 +2,10 @@ import java.util.Properties
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    kotlin("multiplatform") version "1.3.72"
-    kotlin("plugin.serialization") version "1.3.72"
-    id("com.github.johnrengelman.shadow") version "6.0.0"
-    id("com.github.ben-manes.versions") version "0.29.0"
+    kotlin("multiplatform") version "1.4.10"
+    kotlin("plugin.serialization") version "1.4.10"
+    id("com.github.johnrengelman.shadow") version "6.1.0"
+    id("com.github.ben-manes.versions") version "0.33.0"
     id("org.liquibase.gradle") version "2.0.4"
 }
 
@@ -15,7 +15,9 @@ version = "1.0-SNAPSHOT"
 repositories {
     jcenter()
     mavenCentral()
-    maven("https://kotlin.bintray.com/kotlin-js-wrappers")
+    maven("https://dl.bintray.com/kotlin/ktor")
+    maven("https://dl.bintray.com/kotlin/kotlinx")
+    maven("https://dl.bintray.com/kotlin/kotlin-js-wrappers")
 }
 
 loadLocalProperties()
@@ -24,15 +26,15 @@ val jdbcDatabaseUrl: String? by project
 val distsDir: File by project
 val libsDir: File by project
 
-val ktorVersion = "1.3.2"
+val ktorVersion = "1.4.1"
 val logbackVersion = "1.2.3"
 val exposedVersion = "0.17.7"
-val postgresqlDriverVersion = "42.2.15"
-val liquibaseVersion = "3.9.0"
-val liquibaseGroovyDslVersion = "2.1.2"
+val postgresqlDriverVersion = "42.2.16"
+val liquibaseVersion = "4.1.0"
+val liquibaseGroovyDslVersion = "3.0.0"
 val reactVersion = "16.13.1"
-val kotlinReactVersion = "$reactVersion-pre.105-kotlin-1.3.72"
-val kotlinStyledVersion = "1.0.0-pre.105-kotlin-1.3.72"
+val kotlinReactVersion = "$reactVersion-pre.115-kotlin-1.4.10"
+val kotlinStyledVersion = "1.0.0-pre.115-kotlin-1.4.10"
 val hamcrestLibraryVersion = "2.2"
 
 kotlin {
@@ -82,7 +84,6 @@ kotlin {
     sourceSets {
         getByName("jvmMain") {
             dependencies {
-                implementation(kotlin("stdlib"))
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-html-builder:$ktorVersion")
                 implementation("io.ktor:ktor-serialization:$ktorVersion")
@@ -104,7 +105,6 @@ kotlin {
 
         getByName("jsMain") {
             dependencies {
-                implementation(kotlin("stdlib-js"))
                 implementation("org.jetbrains:kotlin-react:$kotlinReactVersion")
                 implementation("org.jetbrains:kotlin-react-dom:$kotlinReactVersion")
                 implementation("org.jetbrains:kotlin-styled:$kotlinStyledVersion")
@@ -112,14 +112,14 @@ kotlin {
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
 
-                implementation(npm("text-encoding", "0.7.0"))
-                implementation(npm("abort-controller", "3.0.0"))
-
-                implementation(npm("react", reactVersion))
-                implementation(npm("react-dom", reactVersion))
-                implementation(npm("react-is", reactVersion))
-                implementation(npm("inline-style-prefixer", "6.0.0"))
-                implementation(npm("styled-components", "5.1.0"))
+//                implementation(npm("text-encoding", "0.7.0"))
+//                implementation(npm("abort-controller", "3.0.0"))
+//
+//                implementation(npm("react", reactVersion))
+//                implementation(npm("react-dom", reactVersion))
+//                implementation(npm("react-is", reactVersion))
+//                implementation(npm("inline-style-prefixer", "6.0.0"))
+//                implementation(npm("styled-components", "5.1.0"))
             }
         }
     }
@@ -142,7 +142,7 @@ liquibase {
 
 tasks {
     wrapper {
-        gradleVersion = "6.6"
+        gradleVersion = "6.6.1"
     }
 
     register<Copy>("copyLiquibase") {
