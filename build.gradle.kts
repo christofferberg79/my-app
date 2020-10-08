@@ -66,12 +66,6 @@ kotlin {
 
     js {
         browser {
-            // workaround for https://github.com/ktorio/ktor/issues/1339
-            @Suppress("EXPERIMENTAL_API_USAGE")
-            dceTask {
-                keep("ktor-ktor-io.\$\$importsForInline\$\$.ktor-ktor-io.io.ktor.utils.io")
-            }
-
             runTask {
                 devServer = devServer?.copy(
                     port = 8088,
@@ -111,15 +105,6 @@ kotlin {
                 implementation("io.ktor:ktor-client-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-json-js:$ktorVersion")
                 implementation("io.ktor:ktor-client-serialization-js:$ktorVersion")
-
-//                implementation(npm("text-encoding", "0.7.0"))
-//                implementation(npm("abort-controller", "3.0.0"))
-//
-//                implementation(npm("react", reactVersion))
-//                implementation(npm("react-dom", reactVersion))
-//                implementation(npm("react-is", reactVersion))
-//                implementation(npm("inline-style-prefixer", "6.0.0"))
-//                implementation(npm("styled-components", "5.1.0"))
             }
         }
     }
