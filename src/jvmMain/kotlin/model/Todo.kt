@@ -25,7 +25,7 @@ data class TodoWithId(
 ) : Todo
 
 @Serializable
-data class TodoDraft(override val description: String, override val done: Boolean) : Todo
+data class TodoDraft(override val description: String, override val done: Boolean = false) : Todo
 
 fun TodoDraft.withId() = TodoWithId(UUID.randomUUID(), description, done)
 
