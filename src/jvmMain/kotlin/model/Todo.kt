@@ -19,7 +19,7 @@ interface Todo {
 
 @Serializable
 data class TodoWithId(
-    @Serializable(UUIDSeralizer::class) val id: UUID,
+    @Serializable(UUIDSerializer::class) val id: UUID,
     override val description: String,
     override val done: Boolean
 ) : Todo
@@ -52,7 +52,7 @@ fun TodoWithId(row: ResultRow): Todo = TodoWithId(
 )
 
 @Serializer(UUID::class)
-object UUIDSeralizer : KSerializer<UUID> {
+object UUIDSerializer : KSerializer<UUID> {
     override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: UUID) {
