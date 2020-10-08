@@ -3,7 +3,6 @@ package cberg.myapp
 import cberg.myapp.model.Todo
 import cberg.myapp.model.TodoDraft
 import io.ktor.client.*
-import io.ktor.client.engine.js.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
@@ -14,7 +13,7 @@ class TodoClient {
     private val baseUrl = Url(window.location.origin)
     private val todosUrl = URLBuilder(baseUrl).path("todos").build()
     private val String.url get() = URLBuilder(baseUrl).path("todos", this).build()
-    private val client: HttpClient = HttpClient(Js) {
+    private val client = HttpClient {
         install(JsonFeature) {
             serializer = KotlinxSerializer()
         }
